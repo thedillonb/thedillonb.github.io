@@ -1278,9 +1278,6 @@ hr {
 .cover-navigation {
   margin-top: 10px; }
 
-.cover-navigation--social {
-  margin-left: 30px; }
-
 .cover-green {
   background-color: rgba(21, 111, 120, 0.6);
   background-image: -webkit-gradient(linear, left top, left bottom, color-stop(20%, rgba(21, 111, 120, 0.6)), color-stop(100%, rgba(6, 31, 33, 0.8)));
@@ -1390,8 +1387,7 @@ nav {
       border-color: #FFF;
       opacity: 1; }
 
-.navigation--social {
-  margin-left: 1.5em; }
+.navigation--social { }
   .navigation--social a {
     padding: 6px 8px 6px 9px; }
     .navigation--social a .label {
