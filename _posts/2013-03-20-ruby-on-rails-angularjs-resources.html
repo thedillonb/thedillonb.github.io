@@ -1,0 +1,349 @@
+---
+layout: post
+title: ! 'Ruby on Rails & AngularJS: Resources'
+categories:
+- Programming
+- Projects
+tags:
+- angularjs
+- Javascript
+- rails
+status: publish
+type: post
+published: true
+meta:
+  _edit_last: '1'
+  _et_leanbiz_settings: ! 'a:8:{s:14:"et_is_featured";i:1;s:15:"et_fs_variation";i:2;s:11:"et_fs_video";s:0:"";s:17:"et_fs_video_embed";s:0:"";s:11:"et_fs_title";s:35:"Rails
+    &amp; AngularJS: Simple-Forum";s:17:"et_fs_description";s:56:"Rails back-end communicating
+    with an AngularJS front-end";s:10:"et_fs_link";s:0:"";s:22:"et_fs_link_custom_text";s:0:"";}'
+  _thumbnail_id: '244'
+author:
+  login: dillonb
+  email: thedillonb@gmail.com
+  display_name: Dillon
+  first_name: Dillon
+  last_name: Buchanan
+---
+<p>I'm a huge fan of AngularJS and an even bigger fan of Ruby on Rails. However, one of the gripes I have with AngularJS is the fact it lacks great documentation. Stuff seems scattered, especially when it comes to the magical 'Resource' module. To test the feasibility of AngularJS when using Rails I created a simple project to demonstrate an all AngularJS front-end communicating to a Rails back-end via the Resource module. The following write up starts with setting up Rails and moves into setting up Angular later.</p>
+
+<h2>Source and Live Demo</h2>
+<p>You can find the entire project  <a href="https://github.com/thedillonb/rails-angularjs-simple-forum">here on Github</a> and the live demonstration of the project <a href="http://obscure-bayou-5295.herokuapp.com/">here on Heroku</a>. One thing to note as you walk through this article is that I will be updating the source as the project evolves so this article might become outdated at some point. Regardless, you can browse the code at the point in time when I created this article by viewing the <a href="https://github.com/thedillonb/rails-angularjs-simple-forum/tree/4ba2211ca6a67bda38ff6eb09d20d40c03722d63">source via the commit hash</a>.</p>
+
+<h2> Setting Up Rails</h2>
+<p>Setting up the Rails back-end was the easy part. A simple wave of the Rails project generator wand and I was up and running. Before we continue, I wanted to stress that we'll be using Rails as a back-end to serve up JSON responses to the front-end. Aside from that, everything about the front-end will be stored in the 'angular' assets folder which we'll create later.</p>
+<p>The first thing I did, as I like to do, is add some of my favorite gems that will help ignore the tedious parts of rails and get to the exciting parts:</p>
+<ul>
+<li><span style="line-height: 13px;"><a href="https://github.com/josevalim/inherited_resources">inherited_resources</a><br />
+</span></li>
+<li><a href="https://github.com/thomas-mcdonald/bootstrap-sass">bootstrap-sass</a></li>
+<li><a href="https://github.com/evrone/quiet_assets">quite_assets</a></li>
+</ul>
+<p>If you've never heard of these Gems I suggest you click on their links above and check them out. I won't go into them here but they're very useful in cutting down the time it takes to write some rails code, the styling of your application, and eliminates the overload of asset information during HTTP requests.</p>
+
+<h3>Models</h3>
+<p>For this project, I created two models: a Forum and a Comment.</p>
+<pre class="brush: rails; gutter: true">class Forum &lt; ActiveRecord::Base
+  attr_accessible :name
+  has_many :comments, :dependent =&gt; :destroy
+
+  validates_uniqueness_of :name
+  validates_presence_of :name
+  validates_length_of :name, minimum: 1
+end</pre>
+<pre class="brush: rails; gutter: true">class Comment &lt; ActiveRecord::Base
+  belongs_to :forum
+  attr_accessible :name, :body
+
+  default_scope order(&quot;created_at desc&quot;)
+
+  validates_presence_of :name
+  validates_presence_of :body
+end</pre>
+
+<p>The forum has_many comments and both have simple fields such as a name, and the body of the comment. Nothing very surprising here. I added some validations to demonstrate error handing on the front-end.</p>
+
+<h3>Controllers</h3>
+<p>Thanks to inherited_resources, creating the controllers for both of the models was incredibly easy. Again, because we're primarily serving up JSON we don't need anything too fancy from these controllers.</p>
+<pre class="brush: rails; gutter: true">class ApplicationController &lt; ActionController::Base
+
+  # We&#039;ll just use this as a launch point for our App
+  def index
+    # Render just the layout since this application is Angular driven
+    # our layout/application has all the angular logic and our controllers
+    # have no views for themselves. We just need a place to launch from
+    # and this happens to be it. So we have no view (thus :nothing =&gt; true)
+    # but we still want the layout (since it has the App bootstrap code)
+    render :layout =&gt; &#039;application&#039;, :nothing =&gt; true
+  end
+end</pre>
+<p>As described in the comment above, the application controller's only job is to serve up a resource that consists of just rendering the application layout with no controller view. I'll go into this a little later, but there's many ways to serve up the front-end application - this was just the easiest for me at the time.</p>
+<p>The 'Forums' &amp; 'Comments' controllers are described below. Again, because we used inherited_resources we can omit all the boiler plate code that comes with serving up CRUD methods for controllers. Instead, we'll just need to tell the controllers what they should respond to: JSON, and tell the 'CommentsController' that it belongs_to a Forum. Because we're using nested resources, this is a good way to tell inherited_resources what the deal is between the two controllers &amp; how to retrieve the params out of the URL.</p>
+<pre class="brush: rails; gutter: true">class ForumsController &lt; InheritedResources::Base
+  respond_to :json
+end
+
+class CommentsController &lt; InheritedResources::Base
+  belongs_to :forum
+  respond_to :json
+end</pre>
+<h3></h3>
+
+<h3>Routes</h3>
+<p>The routing in this application is pretty straight forward. We are creating resource routes for the 'Forums' &amp; 'Comments' controllers. We'll nest the comments in the forums to provide us with a '/forum/#/comments/' type of URL.</p>
+<pre class="brush: rails; gutter: true">SimpleForum::Application.routes.draw do
+  resources :forums, :defaults =&gt; {format: :json} do
+    resources :comments, :defaults =&gt; {format: :json}
+  end
+  root to: &#039;application#index&#039;
+end</pre>
+<p>The last thing to point out is the fact that we're setting a default format for the two resources. This leads me to my first important point when working with AngularJS and Rails.</p>
+<p><strong>Important:</strong> AngularJS allows us to create '$resource' objects with a specific URL. The URL commonly incorporates some sort of ID field for the 'get' method. For example:</p>
+<pre class="brush: javascript; gutter: true">var Forum = $resource(&#039;/forums/:id&#039;, {id: &#039;@id&#039;}, ...);</pre>
+<p>There's a lingering problem here if we need to append the '.json' to the URL. AngularJS will trim the URL of the ':id' parameter when you utilize the 'query' method. However, if you have something after that ':id' indicator the URL will become: '/forums/.json' when AngularJS removes the ':id' tag. This results in a bad URL! Instead of fighting with AngularJS to abide by the Rails format parameter. I find it easiest to avoid the situation all together by telling rails that we'll be serving up JSON by default.</p>
+
+<h3>Rails Layout View</h3>
+<p>Since Rails creates a layout view for us I decided to alter it to fit the project. In this case, I didn't have to alter too much but add a few things to bootstrap our AngularJS front-end.</p>
+<pre class="brush: html; gutter: true">&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot; ng-app=&quot;app&quot;&gt;
+&lt;head&gt;
+  &lt;title&gt;SimpleForum&lt;/title&gt;
+  &lt;%= stylesheet_link_tag &quot;application&quot;, :media =&gt; &quot;all&quot; %&gt;
+  &lt;%= javascript_include_tag &quot;application&quot; %&gt;
+  &lt;%= csrf_meta_tags %&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div class=&quot;container&quot;&gt;
+  &lt;div ng-view&gt;&lt;/div&gt;
+&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+<p>Take care to notice the 'ng-app' attribute in the HTML tag as well as the 'ng-view' attribute within the DIV tag within the body. When we build our AngularJS application, we'll be naming it 'app' (hence the ng-app='app' within the HTML tag) and telling Angular that we'll be using the DIV tag within the body as our view port.</p>
+
+<h3> Configuration</h3>
+<p>One last thing before we continue. There's a very important configuration setting that is, by default, just the way we want it, but none-the-less important to point out. In a Rails 3 application, within the 'config/initializers' folder you'll find a file called 'wrap_parameters.rb'. If you open it up, you should see the following:</p>
+<pre class="brush: rails; gutter: true"># Enable parameter wrapping for JSON. You can disable this by setting :format to an empty array.
+ActiveSupport.on_load(:action_controller) do
+  wrap_parameters format: [:json]
+end
+
+# Disable root element in JSON by default.
+ActiveSupport.on_load(:active_record) do
+  self.include_root_in_json = false
+end</pre>
+<p>These configurations are very important when used with AngularJS. Out of the box, the Angular-Resource module does <strong>NOT</strong> wrap the root of the objects it sends via JSON. This is contrary to what Rails does and is cause for much confusion. So much so that there is a Gem out there just to solve this issue: <a href="https://github.com/FineLinePrototyping/angularjs-rails-resource">AngularJS-Rails-Resource.</a> However, you can still use Angular-Resource right out of the box if you have rails setup like the above.</p>
+<p>When AngularJS requests JSON from the server, it does not expect that the objects are root wrapped. So, we want Rails to avoid root wrapping the JSON. This is accomplished by the 'self.<a href="http://api.rubyonrails.org/classes/ActiveModel/Serializers/JSON.html">include_root_in_json</a> = false'. This tells rails to avoid root wrapping.</p>
+<p>When AngularJS sends JSON to the server, again it does not root wrap the JSON it sends. Which, at first glance might seem problematic since we typically feed data into a model through some sort of 'params[:root]' which in tern contains all the attributes. If we send it without a root, how will it know what to do? Well, as it turns out, Rail's '<a href="http://edgeapi.rubyonrails.org/classes/ActionController/ParamsWrapper.html">wrap_parameters</a> format: [:json]' configuration, seen above, allows us to tell Rails to allow clients to submit POST requests without having to specify any root elements. Rails will use logic to determine what the appropriate root hash is and wrap it up!</p>
+
+<h2>Setting up AngularJS</h2>
+<p>Now for some fun. To simplify the project I ended up throwing the AngularJS front-end in the assets directory and serving it up via that conduit. However, there's many ways to accomplish this and feel free to experiment. One of the benefits of doing it this way is that we can use the 'erb' template, or any other dynamic template engine.</p>
+<p>The first thing to do is create the folder and file structure for the app. Within the 'assets' directory I created the 'angular' directory which will house three folders: 'controllers', 'services', and 'templates'. This is where all our front-end logic will go.</p>
+<p>Next, download the latest AngularJS off the web and stick it in the 'assets/javascripts/' folder. Repeat for the Angular-Resource javascript file (since they're no longer packaged together). Finally, open up the 'assets/javascripts/application.js' file and make a few fine tunes:</p>
+<pre class="brush: css; gutter: true">// WARNING: THE FIRST BLANK LINE MARKS THE END OF WHAT&#039;S TO BE PROCESSED, ANY BLANK LINE SHOULD
+// GO AFTER THE REQUIRES BELOW.
+//
+//= require jquery
+//= require angular.min.js
+//= require angular-resource.min.js
+//= require ../angular/app.js
+//= require_tree ../angular</pre>
+<p>The last 2 lines are <strong>extremely</strong> important! The 'app.js' file is where we'll configure and define our application. It's imperative that it becomes before the mass include of the 'angular' folder tree!</p>
+
+<h3>Getting Back-end Data</h3>
+<p>The first thing to do is setup a means to retrieve the models on the back-end. This is pretty easy in AngularJS and only requires a few modifications to get right.  Both of the following definitions can be put into a file within the 'assets/angular/services' directory.</p>
+<pre class="brush: javascript; gutter: true">&#039;use strict&#039;;
+
+var app = angular.module(&#039;app&#039;);
+app.factory(&#039;Forum&#039;, function($resource) {
+    return $resource(&#039;/forums/:id&#039;, {id: &#039;@id&#039;});
+});
+
+app.factory(&#039;Comment&#039;, function($resource) {
+    return $resource(&#039;/forums/:forumId/comments/:id&#039;, {forumId: &#039;@forumId&#039;, id: &#039;@id&#039;});
+});</pre>
+<p>The code should be pretty self explanatory (hopefully if you're familiar with AngularJS). I'm basically setting up  a means to get 'Forums' &amp; 'Comments'. AngularJS requires that we specify the URL as well as any index identifiers (such as 'id') that is used to retrieve a specific object.</p>
+<p><strong>Important:</strong> AngularJS does not have a analogous method for 'update'. If you want to add update capability you'll need to add {'update': {method: 'PUT'}} to the <em>actions</em> parameter of the $resource object. We're not updating anything here so I wont bother including that.</p>
+
+<h3>Controllers for Forums &amp; Comments</h3>
+<p>After creating the model, I like to create the controllers for those objects - so here we are. Both of these classes are put into files within the 'assets/angular/controllers' directory. The first controller I created was for the Forums. I've commented it pretty heavily so I'll let the code speak for itself.</p>
+<pre class="brush: javascript; gutter: true">&#039;use strict&#039;;
+
+var app = angular.module(&#039;app&#039;);
+
+app.controller(&#039;ForumIndexController&#039;, function($scope, Forum) {
+    //Grab all forums from the server
+    $scope.items = Forum.query();
+
+    //Destroy method for deleting a forum
+    $scope.destroy = function(index) {
+
+        //Tell the server to remove the object
+        Forum.remove({id: $scope.items[index].id}, function() {
+            //If successful, remove it from our collection
+            $scope.items.splice(index, 1);
+        });
+    }
+});
+
+app.controller(&#039;ForumCreateController&#039;, function($scope, $location, Forum) {
+    //The save method which is called when the user wants to submit their data
+    $scope.save = function() {
+
+        //Create the forum object to send to the back-end
+        var forum = new Forum($scope.forum);
+
+        //Save the forum object
+        forum.$save(function() {
+
+            //Redirect us back to the main page
+            $location.path(&#039;/&#039;);
+
+        }, function(response) {
+
+            //Post response objects to the view
+            $scope.errors = response.data.errors;
+        });
+    }
+});
+
+//A controller to show the forum and all it&#039;s glory
+app.controller(&#039;ForumShowController&#039;, function($scope, Forum, Comment, $routeParams) {
+    //Grab the forum from the server
+    $scope.forum = Forum.get({id: $routeParams.id})
+});</pre>
+<p>Now to define the Comments controller:</p>
+<pre class="brush: javascript; gutter: true">&#039;use strict&#039;;
+
+var app = angular.module(&#039;app&#039;);
+app.controller(&#039;CommentsController&#039;, function($scope, Comment, $routeParams) {
+    //Grab all the comments from the server
+    $scope.comments = Comment.query({forumId: $routeParams.id});
+
+    //Define a &#039;save&#039; method which will be called from the view.
+    $scope.save = function() {
+        //Create the comment object to be sent to the server
+        var obj = new Comment({name: $scope.name, body: $scope.body, forumId: $routeParams.id});
+
+        //Attempt a save to the back-end
+        obj.$save(function(response) {
+
+            //If we&#039;re successful then add the response (the object as the server sees it)
+            // to our collection of comments
+            $scope.comments.unshift(response);
+
+            //Empty the name &amp; body
+            $scope.name = $scope.body = &quot;&quot;
+
+        }, function(response) {
+
+            //If there&#039;s a failure set the &#039;errors&#039; scope variable so it&#039;ll be reflected in the view.
+            $scope.errors = response.data.errors;
+        });
+    }
+});</pre>
+
+<h3>Views for All</h3>
+<p>We're almost done! We need to create 3 views: a Forum index, a Forum new, and a Forum show. For simplicity sake, we're gunna cram the ability to view and create comments in the Forum show view since it makes things easier and reduces the amount of routes we need to create in the end. Create a 'index.html', 'new.html', and 'show.html' within the 'assets/angular/templates' directory.</p>
+<p>The following HTML specifies the view for the index.html:</p>
+<pre class="brush: html; gutter: true">&lt;h2&gt;Forums &lt;a href=&quot;#/forum/new&quot; class=&quot;btn btn-primary pull-right&quot;&gt;New&lt;/a&gt;&lt;/h2&gt;
+
+&lt;!-- This will only show when there&#039;s no items to let the user know there&#039;s purposefully nothing there.. --&gt;
+&lt;div ng-show=&quot;items.length == 0&quot;&gt;
+    &lt;hr /&gt;
+    &lt;h4&gt;There&#039;s nothing here...&lt;/h4&gt;
+    &lt;p&gt;Use the &#039;New&#039; button to create a new forum!&lt;/p&gt;
+&lt;/div&gt;
+
+&lt;!-- A nice table that will contain a list of Forums --&gt;
+&lt;table class=&quot;table table-hover&quot;&gt;
+    &lt;!-- This will create a row for every item within our items object (both of these refer to the forums --&gt;
+    &lt;tr ng-repeat=&quot;item in items&quot;&gt;
+        &lt;td width=&quot;100%&quot;&gt;&lt;a href=&quot;#/forum/{{item.id}}&quot;&gt;{{item.name}}&lt;/a&gt;&lt;/td&gt;
+
+        &lt;!-- When the user clicks this button it will call the &#039;destory()&#039; method within the controller --&gt;
+        &lt;td&gt;&lt;a ng-click=&quot;destroy($index)&quot; href=&quot;&quot;&gt;&lt;i class=&quot;icon-trash&quot;&gt;&lt;/i&gt;&lt;/a&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+&lt;/table&gt;</pre>
+<p>Again, this is hopefully nothing out of the ordinary if you've used AngularJS before. I'm basically creating a table of all the Forums available to us. All the data comes from the Forum Controller we defined a while ago. In the next section I'll show you the code that ties it all together.</p>
+<p>The next view is the 'new.html'</p>
+<pre class="brush: html; gutter: true">&lt;h2&gt;New Forum&lt;/h2&gt;
+
+&lt;!-- When the form is submitted call the save() function within the controller --&gt;
+&lt;form ng-submit=&quot;save()&quot; class=&quot;form-vertical&quot;&gt;
+
+    &lt;!-- The control-group, control-label, and controls classes are Bootstrap specific --&gt;
+    &lt;div class=&quot;control-group&quot;&gt;
+        &lt;label class=&quot;control-label&quot;&gt;Forum Name:&lt;/label&gt;
+
+        &lt;div class=&quot;controls&quot;&gt;
+            &lt;!-- This input is tied to the forum.name object. --&gt;
+            &lt;input type=&quot;text&quot; ng-model=&quot;forum.name&quot;/&gt;
+
+            &lt;!-- If there&#039;s any errors that pertain to name display them here! --&gt;
+            &lt;div ng-repeat=&quot;error in errors.name&quot;&gt;{{error}}&lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;control-group&quot;&gt;
+        &lt;div class=&quot;controls&quot;&gt;
+            &lt;input class=&quot;btn btn-primary&quot; type=&quot;submit&quot; value=&quot;Create!&quot;/&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/form&gt;</pre>
+<p>Finally, the 'show.html':</p>
+<pre class="brush: html; gutter: true">&lt;h2&gt;Forum: {{forum.name}}&lt;/h2&gt;
+&lt;hr/&gt;
+
+&lt;div ng-controller=&quot;CommentsController&quot;&gt;
+    &lt;div class=&quot;media&quot; ng-repeat=&quot;comment in comments&quot;&gt;
+        &lt;div class=&quot;media&quot;&gt;
+            &lt;div class=&quot;media-body&quot;&gt;
+                &lt;h4 class=&quot;media-heading&quot;&gt;
+                    {{comment.name}}
+                    &lt;div class=&quot;pull-right&quot; style=&quot;font-size: 12px;&quot;&gt;
+                        {{comment.created_at}}
+                    &lt;/div&gt;
+                &lt;/h4&gt;
+                {{comment.body}}
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;hr/&gt;
+
+    &lt;!-- This is the forum to create a comment --&gt;
+    &lt;form ng-submit=&quot;save()&quot;&gt;
+        &lt;input type=&quot;text&quot; ng-model=&quot;name&quot; style=&quot;width: 100%;&quot; placeholder=&quot;Name&quot;/&gt;
+        &lt;div ng-repeat=&quot;error in errors.name&quot; class=&quot;alert alert-error&quot;&gt;&lt;strong&gt;Name&lt;/strong&gt; {{error}}&lt;/div&gt;
+
+        &lt;textarea ng-model=&quot;body&quot; rows=&quot;4&quot; style=&quot;width: 100%;&quot; placeholder=&quot;Comment&quot;&gt;&lt;/textarea&gt;
+        &lt;div ng-repeat=&quot;error in errors.body&quot; class=&quot;alert alert-error&quot;&gt;&lt;strong&gt;Body&lt;/strong&gt; {{error}}&lt;/div&gt;
+
+        &lt;button type=&quot;submit&quot; class=&quot;btn btn-primary btn-large&quot;&gt;Post!&lt;/button&gt;
+    &lt;/form&gt;
+&lt;/div&gt;</pre>
+<h3></h3>
+<h3>Tying it all Together</h3>
+<p>That last thing I like to do in my application is create the routes for the application. If you like to create your application in segments, testing each one as you go, it's probably better to do this step first. Regardless, the following code ties the URLs of the application to specific controllers and the views that are instantiated for them. The following is the 'app.js.erb' file created in the 'assets/angular' folder. We'll use the 'erb' engine to allow us to properly reference the 'templates' that are retrieved when the route is called.</p>
+<pre class="brush: javascript; gutter: true">&#039;use strict&#039;;
+/*
+    This is our main launch point from Angular. We&#039;ll put anything to do with the
+    general well being of our app in this file. For now it&#039;ll basically just contain
+    the routing information.
+
+    Our module will be called &#039;app&#039;.
+
+    Note: We need the empty array after the &#039;app&#039; declaration, without it, you
+    get an error complaining about &#039;No module &lt;MODULE&gt;&#039;.
+ */
+angular.module(&#039;app&#039;, [&#039;ngResource&#039;])
+    .config([&#039;$routeProvider&#039;, function($routeProvider, $locationProvider) {
+        $routeProvider
+            .when(&#039;/&#039;,          {controller: &#039;ForumIndexController&#039;,    templateUrl: &#039;&lt;%= asset_path(&#039;templates/index.html&#039;) %&gt;&#039;})
+            .when(&#039;/forum/new&#039;, {controller: &#039;ForumCreateController&#039;,   templateUrl: &#039;&lt;%= asset_path(&#039;templates/new.html&#039;) %&gt;&#039;})
+            .when(&#039;/forum/:id&#039;, {controller: &#039;ForumShowController&#039;,     templateUrl: &#039;&lt;%= asset_path(&#039;templates/show.html&#039;) %&gt;&#039;})
+            .otherwise({redirectTo: &#039;/&#039;});
+}]);</pre>
+<h2></h2>
+<h2>Fin</h2>
+<p>There you have it. A Rails back-end tied to an AngularJS front-end. There was a lot of information excluded from this type up to the the fact the length of the article would have been gargantuan. However, I highly recommend you look at the github project: <a href="https://github.com/thedillonb/rails-angularjs-simple-forum">found here</a>. If you have any comments, or questions, please feel free to leave a comment!</p>
+
+

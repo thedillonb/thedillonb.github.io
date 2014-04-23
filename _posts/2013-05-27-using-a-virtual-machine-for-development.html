@@ -1,0 +1,34 @@
+---
+layout: post
+title: Using a Virtual Machine for Development
+categories:
+- Programming
+tags:
+- development
+- virtual machine
+status: publish
+type: post
+published: true
+meta:
+  _edit_last: '1'
+  _thumbnail_id: '324'
+  _et_leanbiz_settings: a:1:{s:14:"et_is_featured";i:0;}
+author:
+  login: dillonb
+  email: thedillonb@gmail.com
+  display_name: Dillon
+  first_name: Dillon
+  last_name: Buchanan
+---
+<p>I never develop in my host OS and neither should you. If you've never used a virtual machine that's forgivable but if you've never heard of one then you're in for a surprise. Virtual machines are an excellent way to fully utilize the underlying physical hardware of a PC and, even better, they're a great way to isolate two operating systems and the applications running on them. I'm going to show you that they're the bees knees when it comes to developing.</p>
+
+<h2>The Problem</h2>
+<p>If you're a developer than chances are that you constantly creating new code, downloading new libraries, installing/uninstalling frameworks, and the list goes on. The point being is that projects, libraries, configuration files, etc, can get scattered all over the place or even orphaned. If you work on more than one project at a time then you might have even run into issues when you transition between projects that you find you completely blew away a project because you updated the framework necessary for another one. It gets even more messy when you develop with many different languages and the dependencies clash between frameworks. Even worse, when something gets screwed up it has the potential to affect everything on the system.</p>
+
+<h2>Virtual Machines to the Rescue!</h2>
+<p>One of my favorite aspects to a virtual machine is the fact that anything created within the virtual machine stays within the virtual machine: it's completely isolated from the host and other virtual machines. That means, if I create a Ubuntu virtual machine and install Apache, MySQL, and PHP 6, it wont conflict with my IIS, Microsoft SQL, PHP 5 installation that's concurrently running on another virtual machine. It's great! If a partner of mine wants to help with the project I can easily clone the virtual machine, give it to him, and he'll be up and running in minutes. No need to install the frameworks, services, or any of that. It's all right there in the virtual machine image given to my buddy. When I'm done with the project, I trash the VM. No more orphaned files for me!</p>
+
+<h2>Getting Started</h2>
+<p>If you've never used a virtual machine I suggest checking out <a href="http://lifehacker.com/5204434/the-beginners-guide-to-creating-virtual-machines-with-virtualbox">this post on LifeHacker</a>. <a href="https://www.virtualbox.org/">VirtualBox</a> is my application of choice but if you have access to <a href="http://www.vmware.com/">VMWare</a> then it's just as good, if not better in some circumstances. In my experience, I typically create a virtual machine for any project that requires a different language or if the project is drastically different then what I'm doing on the other virtual machines. For example, I have one VM for web development (Rails and Node.js), another VM dedicated to embedded development, and a third dedicated to Android development. All of my virtual machines have 'VirtualBox Tools' installed which means I can copy and past between them as well as easily drag and drop files. I typically start 1, sometimes 2, virtual machines at a time (each given 2 gigs of RAM and 2 CPU cores) so the load on my laptop is very manageable.</p>
+
+

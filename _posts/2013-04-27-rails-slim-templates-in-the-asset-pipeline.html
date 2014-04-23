@@ -1,0 +1,35 @@
+---
+layout: post
+title: ! 'Rails: Slim Templates in the Asset Pipeline'
+categories:
+- Programming
+tags:
+- angularjs
+- rails
+status: publish
+type: post
+published: true
+meta:
+  _edit_last: '1'
+  _et_leanbiz_settings: a:1:{s:14:"et_is_featured";i:0;}
+author:
+  login: dillonb
+  email: thedillonb@gmail.com
+  display_name: Dillon
+  first_name: Dillon
+  last_name: Buchanan
+---
+<p>I hate writing plain HTML these days. With the advent of templating engines like <a href="http://slim-lang.com/">Slim</a> it's really made it hard to ever go back to writing plain HTML. In many of my projects I commonly use a Javascript framework like AngularJS which heavily depends on view templates. To make things easier I generally put all my views in the asset folder - but uh-oh, out of the box it looks like I can't use Slim to create my templates! Well there's a simple fix to get this to work.</p>
+<h2>The Problem</h2>
+<p>If you've ever stuck a Slim file in the assets folder and attempted to access it via it's base extension you'll know it doesn't work quite like you'd probably expect. If I have a file called '/assets/app/templates/test.html.slim' I can only access it if I go to that exact path in the browser and even then it's still in Slim format. The ideal outcome is to be able to access '/assets/app/templates/test.html' and for the engine to respond with HTML. Here's how we fix that.</p>
+<h2>The Fix</h2>
+<ol>
+<li><span style="line-height: 13px;">Create a file in the '/config/initializers/' directory called 'slim_assets.rb' (or what ever you want to call the file - it doesn't matter). </span></li>
+<li>Within that file, paste the following code:
+<pre class="brush: ruby; gutter: true">Rails.application.assets.register_engine(&#039;.slim&#039;, Slim::Template)</pre>
+<p>This piece of code will register the '.slim' extension in our asset pipeline. Now, when we see a '.slim' file it will activate the Slim:template engine and all will be good.</li>
+<li>Restart the server and try accessing the file in the browser.</li>
+</ol>
+<h2>Success!</h2>
+<p>With any luck, you'll now see the HTML counterparts for the Slim templates in your asset pipeline! For completeness sake, I am using Rails 3.2.12 with Slim 1.3.6.</p>
+<p>'</p>

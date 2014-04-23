@@ -1,0 +1,41 @@
+---
+layout: post
+title: ! 'Web Apps: Don''t Forget the Back Button!'
+categories:
+- Programming
+tags:
+- web
+- web app
+status: publish
+type: post
+published: true
+meta:
+  _edit_last: '1'
+  _et_leanbiz_settings: a:1:{s:14:"et_is_featured";i:0;}
+author:
+  login: dillonb
+  email: thedillonb@gmail.com
+  display_name: Dillon
+  first_name: Dillon
+  last_name: Buchanan
+---
+<p>The browser is a wonderful piece of software. Whether you use Chrome, IE, Firefox, or pretty much any other modern browser they all act the same. There's the same primary controls for each: Forward, Backward, Stop, Go, Refresh. These controls have been around a long time and user's have become very accustom to having them work as they would assume. Unfortunately, with the advent of the single page web applications it's become a juggle to try and keep the browser functionality the same when dealing with how to handle navigation.</p>
+
+<h2>First Hand Experience</h2>
+<p>If you've never experienced the frustration of assuming the back button will take you to your previous pane, but actually jumps you out of the web application here's your chance. I'm going to pick on <a href="http://images.google.com/">Google Image Search</a> because everyone has probably used it once before and it's easily accessable. For this demonstration, image search something simple like "Waterfall" and you'll be greeted with the familiar table of images:</p>
+<p><a href="http://www.dillonbuchanan.com/wp-content/uploads/2013/05/waterfall.png"><img class="aligncenter size-medium wp-image-284" alt="waterfall" src="http://www.dillonbuchanan.com/wp-content/uploads/2013/05/waterfall-300x145.png" width="300" height="145" /></a></p>
+
+<p>If you press 'Back' you'll be taken back to your previous page. If you press forward, you'll be taken back here. Just like the user would expect! Now here's where things get messy. Click on an image, any image.</p>
+<p><a href="http://www.dillonbuchanan.com/wp-content/uploads/2013/05/waterfall2.png"><img class="aligncenter size-medium wp-image-286" alt="waterfall2" src="http://www.dillonbuchanan.com/wp-content/uploads/2013/05/waterfall2-300x151.png" width="300" height="151" /></a></p>
+<p>Our main view of the site just completely changed. The other images parted and the image we selected became front and center. In addition, Google was nice enough to give us a few similar images and a few buttons that lead us to the full screen image or the site it came from. Great. Unfortunately, here's where the confusion sets in. When I clicked on that image the whole layout completely changed from my previous view. You might expect that with such a huge departure from what I was previously looking at that I'd be able to 'undo' that or go back to how I was previously looking at the page. If you tried the browser's back button you'd be disappointed.</p>
+<p>The back button sends you back to what you were looking at BEFORE Google Images. It doesn't remove the silly front-and-centered image. What's even more odd is that after you mistakenly pressed the back button if you press forward you jump right back into the front-and-centered view. Only after you realize that you can still scroll the page and click on other images, or click the almost invisible 'X' on the right side of the black box (who knows why they chose gray on black) does the front-and-centered view go away. I done a lot of image searches on Google and this gets me every time - it's a horrible design. So annoying that I use <a href="http://www.bing.com">Bing</a> to do image searches.</p>
+
+<h2>Bing for Image Searches?</h2>
+<p>If you laughed I don't blame you - but try it. It's almost exactly like Google Image search but with one 'feature'. The back button works! It's amazing how much easier it is to navigate around when stuff like that works as you expect.</p>
+
+<h2>A Lesson to be Learned</h2>
+<p>If you're designing a web application always, always, ALWAYS, be mindful of the navigation - especially the back button! Single page web applications are new experience for many but that last thing you wan't to do is completely detach the user from their expected navigation. This is a recipe for disaster that will only frustrate your user. When it comes to navigation I like to follow this simple rule: If you change the layout of the site in anyway you need to be able to use the browser's 'Back' button!</p>
+
+
+
+

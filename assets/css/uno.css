@@ -17,7 +17,7 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
   display: block; }
 
 body {
-  line-height: 1; }
+  line-height: 1; color: black;}
 
 ol, ul {
   list-style: none; }
@@ -951,7 +951,7 @@ h3,
 h4,
 h5,
 h5 {
-  margin-top: .8em;
+  margin-top: 1.1em;
   margin-bottom: .4em;
   font-family: "Roboto Slab", serif;
   font-weight: lighter;
@@ -965,16 +965,16 @@ h1 {
   letter-spacing: .05em; }
 
 h2 {
-  font-size: 2.2em; }
-
-h3 {
   font-size: 1.8em; }
 
-h4 {
+h3 {
   font-size: 1.4em; }
 
 h4 {
   font-size: 1.2em; }
+
+h4 {
+  font-size: 1em; }
 
 h5 {
   font-size: 1em; }
@@ -1041,6 +1041,7 @@ pre {
     border: none; }
 
 .date,
+.comments,
 .time,
 .author,
 .tags {
@@ -1151,10 +1152,10 @@ hr {
   margin-right: .5em; }
 
 .post-meta__tags {
-  margin-left: .4em; }
+  margin-left: .4em; margin-right: .5em; }
 
-.post-meta__author {
-  margin-left: 1.5em; }
+.post-meta__comments {
+  margin-left: .4em; }
 
 .post-meta__avatar {
   display: inline-block;
@@ -1170,7 +1171,9 @@ hr {
   border-radius: 3px;
   text-align: center; }
 .post pre {
-  width: 95%; }
+  width: 95%; 
+  overflow: auto;
+}
 .post hr {
   display: block;
   width: 30%;
@@ -1374,7 +1377,7 @@ nav {
 
 .navigation__item {
   display: inline-block;
-  margin: 0 1px 0 0;
+  margin: 0 10px 0 0;
   line-height: 1em; }
   .navigation__item a {
     display: block;
@@ -1398,7 +1401,10 @@ nav {
 
 .pagination {
   display: block;
-  margin: 0 0 4em 0; }
+  margin: 1em 0 0em 0; 
+  padding: 2em 0 2em 0;
+  border-top: 2px solid #dddddd;
+}
 
 .pagination__page-number {
   margin: 0;
@@ -1678,3 +1684,12 @@ input[type="tel"] {
   .btn, .navigation__item a {
     display: block;
     margin-bottom: .4em; } }
+
+.post-header {
+  margin-bottom: 1em;
+}
+
+.post-seperator {
+  border: 1px solid #eeeeee;
+  margin: 4em 0;
+}

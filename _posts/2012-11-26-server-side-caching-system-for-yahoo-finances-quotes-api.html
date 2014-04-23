@@ -1,0 +1,227 @@
+---
+layout: post
+title: Server Side Caching System For Yahoo Finance's Quotes API
+categories:
+- Programming
+tags:
+- cache
+- finance
+- PHP
+- yahoo
+status: publish
+type: post
+published: true
+meta:
+  _edit_last: '1'
+  _et_leanbiz_settings: a:1:{s:14:"et_is_featured";i:0;}
+author:
+  login: dillonb
+  email: thedillonb@gmail.com
+  display_name: Dillon
+  first_name: Dillon
+  last_name: Buchanan
+---
+<p>Yahoo provides some wonderful APIs. One of which is their Finance API that provides non-commercial access to financial quotes. It's a wonderful service if you've never heard of it. If you're interested in building an application that manipulates stock quote information then this should be where you start. However, before you begin, you should ask yourself: Do I feel good about bombarding their servers with requests all the time for data that probably doesn't change from minute to minute. If you're like me, you'll answer: No. Then you'll create a server side PHP application that caches financial data from Yahoo.</p>
+<p>If you've never heard, or used, Yahoo Finance's Quotes API before checkout this page for some in-depth detail: <a href="http://www.gummy-stuff.org/Yahoo-data.htm">http://www.gummy-stuff.org/Yahoo-data.htm</a></p>
+
+<h2>A Little Background</h2>
+<p>My friend and I are currently working on a financial application that needed financial information like stock quotes. Having little money we don't want to spring for a paid service right away. We'd like to test it out before we hit the ground running. We came up with the idea to create a server side caching application for financial quotes. Since quote data doesn't change much from minute to minute it would cut down on the requests made to the actual financial service. Right now we hooked it up to Yahoo's Financial Quote API to prove the concept and use until we go commercial and switch service to a pay/request type service - in which case a caching system will be even more valuable.</p>
+
+<h2>The Live Application</h2>
+<p>Click the following link to get the stock quote information for EBIX, MSFT, and APPL:</p>
+<p><a href=" http://www.finsqueeze.dillonbuchanan.com/quote.php?s=ebix+msft+appl"> http://www.finsqueeze.dillonbuchanan.com/quote.php?s=ebix+msft+appl</a></p>
+<p>You can request more data by adding additional symbols, separated by "+". You'll notice the "last_update" time does not change when continuously refresh the page until 10 minutes has elapsed since the last update. I have hard coded it to a ten minute expire time. You may choose to set it at whichever you'd like.</p>
+
+<h2>Source Code</h2>
+<p>The logic to create such an application is quite easy but I thought i'd share it since others may come across the moral objection to spamming Yahoo's servers with requests and not cache them. For shame! I have commented the code pretty heavily to make it easy to read through. It follows this flow of logic:</p>
+<ol>
+<li>Get list of symbols requested</li>
+<li>Check database quote data already exists and have been updated in the last 10 minutes</li>
+<li>Request uncached quote data from Yahoo</li>
+<li>Update the database with the quote data we got from Yahoo</li>
+<li>Return all the quote data</li>
+</ol>
+<p>Please not that I have taken out the username, password, and database I used. You'll need to fill those values with your own. I was using MySQL as a backend which you should be able to create a database and use the SQL CREATE command in the comments to replicate what I had done for a database. Once that's done, pop the code below into your server and make a request!</p>
+
+<pre class="brush: php; gutter: true">&lt;?php
+/*
+    Create the following table in a database:
+
+    CREATE TABLE IF NOT EXISTS `quotes` (
+      `symbol` char(128) NOT NULL,
+      `last_update` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+      `quote` varchar(2048) default NULL,
+      UNIQUE KEY `symbol` (`symbol`)
+    ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+    The symbol column will contain the symbol of the stock. 
+
+    The last_update column will contain the time that the symbol&#039;s quote data
+    was last updated. If it is older than the $expire_time variable then
+    that symbol&#039;s data is considered to be old.
+
+    The quote column will contain the raw data of all the stock&#039;s financial data.
+    It is kept as JSON. This could probably be optimized but it was simple and
+    easy to just keep it as raw data and ship it off when requested.
+*/
+
+//Some predefined constants
+$username = &quot;*****&quot;;
+$password = &quot;******&quot;;
+$database = &quot;******&quot;;
+
+//The time until the cache expires
+$expire_time = 10;
+
+//Set the content type to JSON
+header(&#039;Content-type: application/json&#039;);
+
+//If we didn&#039;t request anything just return an empty set
+if (!isset($_GET[&quot;s&quot;])) {
+    echo &quot;[]&quot;;
+    return;
+}
+
+//Grab symbols from the URL request seperated by a &quot;+&quot;: (?s=MSFT+AAPL+NDAQ+...)
+$symbols = explode(&quot; &quot;, strtoupper($_GET[&quot;s&quot;]));
+
+//Connect to the sql database
+mysql_connect(localhost, $username, $password);
+@mysql_select_db($database) or die(&quot;Unable to select database&quot;);
+
+//Grab what data we can from the database
+$dbItems = getDataFromDatabase($symbols, $expire_time);
+
+//Create a diff between the symbols we requested and the symbols we already have data
+//for that we found in our database. This means that if we requested MSFT, APPL, and NDAQ
+//and we already had acceptable quotes for MSFT and APPL $diffSymbols would just be NDAQ.
+$diffSymbols = array_diff($symbols, array_keys($dbItems));
+
+//Get the remaining symbol information from the source
+$sourceItems = getDataFromSource($diffSymbols);
+
+//Update the database with our new data we just got from the source
+updateDataInDatabase($sourceItems);
+
+//Close the database since we don&#039;t need it anymore
+mysql_close();
+
+//Merge the data from the database and the source.
+$totalItems = array_merge($dbItems, $sourceItems);
+
+//Return the JSON data. We&#039;ll only ask it to return the values since our array was
+//(symbol =&gt; quote) and the quote array already had the symbol in it. We don&#039;t need
+//to send duplicated information ;)
+echo json_encode(array_values($totalItems));
+
+/*
+ * Gets symbol quote data from the database by passing in an array of symbols to lookup
+ * This returns an associative array of symbols =&gt; quote.
+ * If the symbol does not exist in the database, or it is old it will not return that symbol&#039;s
+ * data.
+ */
+function getDataFromDatabase($symbols, $expire_time)
+{
+    $query = &quot;SELECT * FROM quotes WHERE symbol IN (<pre wp-pre-tag-0></pre>quot;&quot; . implode(&quot;<pre wp-pre-tag-0></pre>quot;,<pre wp-pre-tag-0></pre>quot;&quot;, $symbols) . &quot;<pre wp-pre-tag-0></pre>quot;) &amp;&amp; TIMESTAMPDIFF(MINUTE, last_update, now()) &lt;= &quot; . strval($expire_time);
+    $result = mysql_query($query);
+
+    $all = array();
+    while ($val = mysql_fetch_assoc($result)) {
+        $all[$val[&quot;symbol&quot;]] = json_decode($val[&quot;quote&quot;], true);
+    }
+    return $all;
+}
+
+/*
+ * Updates the database with new information about symbol quotes.
+ */
+function updateDataInDatabase($data)
+{
+    //Nothing to update!
+    if (count($data) == 0)
+        return;
+
+    //Use a REPLACE query to remove and insert the new values if they already exist.
+    //I believe this is specific to MySQL so adjust accordingly.
+    $query = &quot;REPLACE INTO quotes (symbol, last_update, quote) VALUES &quot;;
+    $inserts = array();
+    foreach ($data as $dat) {
+        $inserts[] = &quot;(&#039;&quot; . $dat[&quot;symbol&quot;] . &quot;&#039;,&#039;&quot; . $dat[&quot;last_update&quot;] . &quot;&#039;,&#039;&quot; . json_encode($dat) . &quot;&#039;)&quot;;
+    }
+    $query = $query . implode(&quot;,&quot;, $inserts);
+    mysql_query($query);
+}
+
+/*
+ * Requests data from the source. This could be any service that provided quotes.
+ * Manipulate the data to fit in to a symbol =&gt; quote array. 
+ */
+function getDataFromSource($symbols)
+{
+    $ret = array();
+
+    //If there are no symbols to get just return our empty array
+    if (count($symbols) == 0)
+        return $ret;
+
+    //This associative array maps the CSV argument to an appropriate array key name
+    //for the value when we return it.
+    $tags = array(&quot;a&quot; =&gt; &quot;ask&quot;, &quot;b&quot; =&gt; &quot;bid&quot;, 
+                  &quot;c1&quot; =&gt; &quot;change&quot;, &quot;o&quot; =&gt; &quot;open&quot;, 
+                  &quot;p&quot; =&gt; &quot;previous_close&quot;, &quot;v&quot; =&gt; &quot;volume&quot;,
+                  &quot;g&quot; =&gt; &quot;daily_low&quot;, &quot;h&quot; =&gt; &quot;daily_high&quot;,
+                  &quot;l1&quot; =&gt; &quot;last_trade_price&quot;, &quot;p2&quot; =&gt; &quot;change_in_percent&quot;,
+                  &quot;k&quot; =&gt; &quot;yearly_high&quot;, &quot;j&quot; =&gt; &quot;yearly_low&quot;, &quot;r&quot; =&gt; &quot;price_earnings_ratio&quot;,
+                  &quot;j1&quot; =&gt; &quot;market_capitalization&quot;, &quot;y&quot; =&gt; &quot;dividend_yield&quot;,
+                  &quot;n&quot; =&gt; &quot;name&quot;, &quot;x&quot; =&gt; &quot;stock_exchange&quot;);
+    $tagsValue = array_values($tags);
+
+    $url = &quot;http://finance.yahoo.com/d/quotes.csv&quot;;
+    $body = &quot;?s=&quot; . implode(&quot;+&quot;, $symbols) . &quot;&amp;f=s&quot; . implode(&quot;&quot;, array_keys($tags));
+    $tmpFile = tmpfile();
+
+    //Execute the request to get the data on the server and put it in a temporary file
+    $c = curl_init($url . $body);
+    curl_setopt($c, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($c, CURLOPT_MAXREDIRS, 10);
+    curl_setopt($c, CURLOPT_FILE, $tmpFile);
+    $page = curl_exec($c);
+    curl_close($c);
+
+    //Rewind the file
+    fseek($tmpFile, 0);
+
+    //Parse out the file
+    while (!feof($tmpFile))
+    {
+        $columns = fgetcsv($tmpFile);
+        $symbol = str_replace(&quot;<pre wp-pre-tag-0></pre>quot;&quot;, &quot;&quot;, $columns[0]);
+        $last_update = date(&quot;Y-m-d G:i:s&quot;);
+
+        //Create an array that already has the symbol and last update time which we
+        //just generated. This array will also be filled with key values pairs 
+        //of the information we wanted in the $tags map
+        $data = array(&quot;symbol&quot; =&gt; $symbol, &quot;last_update&quot; =&gt; $last_update);
+
+        //For everything else in the tags array, we&#039;ll just fill it in as we go.
+        for ($i = 0; $i &lt; count($tagsValue); $i++) {
+            $temp = str_replace(array(&quot;<pre wp-pre-tag-0></pre>quot;&quot;, &quot;%&quot;, &quot;+&quot;), &quot;&quot;, $columns[1 + $i]);
+            if ($temp==&quot;N/A&quot;)
+                $data[$tagsValue[$i]] = null;
+            else if (is_numeric($temp))
+                $data[$tagsValue[$i]] = floatval($temp);
+            else
+                $data[$tagsValue[$i]] = $temp;
+        }
+
+        $ret[$symbol] = $data;
+    }
+
+    //Close the file
+    fclose($tmpFile);
+
+    //Return the array of new data.
+    return $ret;
+}
+
+?&gt;</pre>

@@ -4,8 +4,8 @@
     <div class="panel-main__inner panel-inverted">
     <div class="panel-main__content">
 
-        <a href="{{ site.url }}" title="link to homepage for {{ site.title }}"><img src="{{ site.blog_logo }}" width="80" alt="{{ site.title }} logo" class="panel-cover__logo logo" /></a>
-        <h1 class="panel-cover__title panel-title"><a href="{{ site.url }}" title="link to homepage for {{ site.title }}">{{ site.name }}</a></h1>
+        <a href="{{ site.web_url }}" title="link to homepage for {{ site.name }}"><img src="{{ site.blog_logo }}" width="80" alt="{{ site.nane }} logo" class="panel-cover__logo logo" /></a>
+        <h1 class="panel-cover__title panel-title"><a href="{{ site.web_url }}" title="link to homepage for {{ site.name }}">{{ site.name }}</a></h1>
         <span class="panel-cover__subtitle panel-subtitle">Software Engineer</span>
         <hr class="panel-cover__divider" />
         <p class="panel-cover__description">{{ site.description }}</p>
@@ -13,7 +13,36 @@
 
         <div class="navigation-wrapper">
 
-          {% include social.html %}
+          <nav class="cover-navigation navigation--social">
+            <ul class="navigation">
+
+
+            <!-- Twitter -->
+            <li class="navigation__item">
+              <a href="http://twitter.com/thedillonb" title="@TheDillonB on Twitter">
+                <i class='icon icon-social-twitter'></i>
+                <span class="label">Twitter</span>
+              </a>
+            </li>
+
+              <!-- Dribbble -->
+              <li class="navigation__item">
+                <a href="http://github.com/thedillonb" title="Dillon Buchanan on GitHub">
+                  <i class='icon icon-social-github'></i>
+                  <span class="label">GitHub</span>
+                </a>
+              </li>
+
+              <!-- Email -->
+              <li class="navigation__item">
+                <a href="mailto:thedillonb@gmail.com" title="Email thedillonb@gmail.com">
+                  <i class='icon icon-mail'></i>
+                  <span class="label">Email</span>
+                </a>
+              </li>
+
+            </ul>
+          </nav>
 
         </div>
 

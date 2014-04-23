@@ -3,6 +3,8 @@ markdown: redcarpet
 pygments: true
 paginate: 5
 
+web_url: http://www.dillonbuchanan.com
+
 # Stuff for the website
-description: Hello kitty
+description: "Hello! I am Dillon Buchanan. I'am software developer and all-around programming enthusist working in Boston. I create great software!"
 blog_logo: https://avatars2.githubusercontent.com/u/1644068?s=460

@@ -1,0 +1,43 @@
+---
+layout: post
+title: AngularJS $resolved Resource
+categories:
+- Programming
+tags:
+- angularjs
+status: publish
+type: post
+published: true
+meta:
+  _et_leanbiz_settings: a:1:{s:14:"et_is_featured";i:0;}
+  _edit_last: '1'
+author:
+  login: dillonb
+  email: thedillonb@gmail.com
+  display_name: Dillon
+  first_name: Dillon
+  last_name: Buchanan
+---
+<p>In my last write up I discussed tying AngularJS to a Rails back-end via the Angular-Resource module. If you tried the demo, or thought about the code I implemented for the views, the logic to depict a 'No items' was completely flawed. On requests that took a long time you'd actually see a 'No items' indicator, even though the request hasn't completed yet!</p>
+
+<h2>The Wrong Way</h2>
+<p>Take the following view snippet:</p>
+<pre class="brush: html; gutter: true">&lt;div ng-show=&quot;items.length == 0&quot;&gt;
+    &lt;hr /&gt;
+    &lt;h4&gt;There&#039;s nothing here...&lt;/h4&gt;
+    &lt;p&gt;Use the &#039;New&#039; button to create a new forum!&lt;/p&gt;
+&lt;/div&gt;</pre>
+<p>Which is populated via the following line in the controller:</p>
+<pre class="brush: javascript; gutter: true">$scope.items = Forum.query();</pre>
+<p>As it stands, this approach is completely flawed and the outcome is a premature 'Nothing to see here' message. This is because of the way the $resource module actually works:</p>
+<blockquote><p>It is important to realize that invoking a $resource object method immediately returns an empty reference (object or array depending on <code>isArray</code>).</p></blockquote>
+<p>When we request the items, it's length is immediately zero. Bad news for us.</p>
+
+<h2>The Right Way:</h2>
+<p>The fix is incredibly easy, and relies on an attribute of the object returned by the $resource object. <strong>All hail '$resolved'.</strong> This attribute indicates whether the promise was completed or not. Thus, by simply altering our view logic for the ng-show to:</p>
+<pre class="brush: html; gutter: true">&lt;div ng-show=&quot;items.$resolved &amp;&amp; items.length == 0&quot;&gt;
+    &lt;hr /&gt;
+    &lt;h4&gt;There&#039;s nothing here...&lt;/h4&gt;
+    &lt;p&gt;Use the &#039;New&#039; button to create a new forum!&lt;/p&gt;
+&lt;/div&gt;</pre>
+<p>The problem disappears!</p>

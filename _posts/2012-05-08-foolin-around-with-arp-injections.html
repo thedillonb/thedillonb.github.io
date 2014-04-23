@@ -1,0 +1,174 @@
+---
+layout: post
+title: Foolin' Around With ARP Injections
+categories:
+- Programming
+tags:
+- ARP
+- Python
+status: publish
+type: post
+published: true
+meta:
+  _et_leanbiz_settings: a:8:{s:14:"et_is_featured";s:1:"1";s:15:"et_fs_variation";s:1:"1";s:11:"et_fs_video";s:0:"";s:17:"et_fs_video_embed";s:0:"";s:11:"et_fs_title";s:34:"Foolin'
+    Around With ARP Injections";s:17:"et_fs_description";s:45:"Manipulating ARP Requests
+    to Redirect Traffic";s:10:"et_fs_link";s:0:"";s:22:"et_fs_link_custom_text";s:0:"";}
+  _edit_last: '1'
+  _thumbnail_id: '76'
+author:
+  login: dillonb
+  email: thedillonb@gmail.com
+  display_name: Dillon
+  first_name: Dillon
+  last_name: Buchanan
+---
+<p>My time at Acme Packet taught me a lot about networking. One of the interesting aspects of the job was to run tests that would normally be run with several pieces of equipment with only your piece of hardware and a desktop computer. To do this, although not the conventional way that would be taught, I created a script that would monitor my private network and respond to ARP requests that I knew I wanted routed back to my PC for inspection.</p>
+
+<h3>Download the Source</h3>
+<p>You can download the source <a href="http://dillonbuchanan.com/wp-content/uploads/2012/05/ARPFoolin.zip">here</a>.</p>
+
+<h3>A Little Explanation</h3>
+<p>The code is one python file that you execute from the command line. It depends on dpkt which you can find <a href="http://code.google.com/p/dpkt/">here</a>. I tried to keep the code as neat and commented as possible. For the most part, many of the functions are self explanatory. However, all the magic that might need explaining is down at the bottom:</p>
+<pre class="brush: python; gutter: true">#!/usr/bin/python
+###############################
+#
+# ARP Injection
+#
+# Created by Dillon Buchanan
+#
+###############################
+
+import socket
+from dpkt import ethernet, arp
+import dpkt
+import struct
+import string
+import getopt
+import sys
+
+#
+# Convert a network mac address into a string
+#
+def eth_ntoa(buffer):
+    macaddr = &#039;&#039;
+    for intval in struct.unpack(&#039;BBBBBB&#039;, buffer):
+        if intval &gt; 15:
+            replacestr = &#039;0x&#039;
+        else:
+            replacestr = &#039;x&#039;
+        macaddr = &#039;&#039;.join([macaddr, hex(intval).replace(replacestr, &#039;&#039;)])
+    return macaddr
+
+#
+# Convert a string representation of a mac address into a network address
+#
+def eth_aton(buffer):
+    addr = &#039;&#039;
+    temp = string.split(buffer, &#039;:&#039;)
+    buffer = string.join(temp, &#039;&#039;)
+    for i in range(0, len(buffer), 2):
+        addr = &#039;&#039;.join([addr, struct.pack(&#039;B&#039;, int(buffer[i: i+2], 16))],)
+    return addr
+#
+# Build an ARP reply message
+#
+def buildARP(so_mac, so_ip, to_mac, to_ip):
+    arp_p = arp.ARP()
+    arp_p.sha = eth_aton(so_mac)
+    arp_p.spa = socket.inet_aton(so_ip)
+    arp_p.tha = eth_aton(to_mac)
+    arp_p.tpa = socket.inet_aton(to_ip)
+    arp_p.op = arp.ARP_OP_REPLY
+
+    packet = ethernet.Ethernet()
+    packet.src = eth_aton(so_mac)
+    packet.dst = eth_aton(to_mac)
+    packet.data = arp_p
+    packet.type = ethernet.ETH_TYPE_ARP
+    return packet
+
+#
+# The usage of this program
+#
+def usage():
+    print &quot;ARP Server&quot;
+    print &quot;Generates ARP replys for inquires matching a specific ip/subnet to a target mac address&quot;
+    print 
+    print &quot;\t-h              This help menu&quot;
+    print &quot;\t-i &lt;interface&gt;  The interface to listen on&quot;
+    print &quot;\t-m &lt;ip&gt;/&lt;mask&gt;  The IP/subnet mask to respond to&quot;
+    print &quot;\t-r &lt;mac addr&gt;   The mac address to respond with&quot;
+
+#
+# Creates a subnet mask from an integer /32, /16, /24, etc...
+#
+def makeMask(num):
+    j = 0
+    for i in range(0, num):
+        j |= (1&lt;&lt;(31-i))
+    return j
+
+
+#Default parameters
+iface = &quot;eth0&quot;
+imask = 0
+mask = &quot;0.0.0.0&quot;
+my_mac = &quot;&quot;
+
+# Get command line options
+try:
+    opts, args = getopt.getopt(sys.argv[1:], &quot;hi:m:r:&quot;)
+except getopt.GetoptError, err:
+    print str(err)
+    usage()
+    sys.exit(2)
+
+for o, a in opts:
+    if o == &quot;-h&quot;:
+        usage()
+        sys.exit()
+    elif o == &quot;-i&quot;:
+        iface = a
+    elif o == &quot;-m&quot;:
+        imask = makeMask(int(a.split(&quot;/&quot;)[1]))
+        mask = a.split(&quot;/&quot;)[0]
+    elif o == &quot;-r&quot;:
+        my_mac = a;
+
+# Generate the mask correctly
+mask = socket.inet_aton(mask)
+mask = struct.unpack(&#039;&gt;L&#039;, mask)[0] &amp; imask
+
+# Create a raw socket
+s = socket.socket(socket.PF_PACKET, socket.SOCK_RAW)
+s.bind((iface, ethernet.ETH_TYPE_ARP))
+
+# If not mac supplied then default to the given interfaces
+if my_mac == &quot;&quot;:
+    my_mac = eth_ntoa(s.getsockname()[-1])
+
+# Get all the ARP packets
+while 1:
+    data = s.recv(1500)
+    answer = ethernet.Ethernet(data)
+    arp_p = answer.data
+
+    orig = socket.inet_ntoa(arp_p.spa)
+    to_mac = eth_ntoa(arp_p.sha)
+    dest = socket.inet_ntoa(arp_p.tpa)
+    dest_num = struct.unpack(&#039;&gt;L&#039;, arp_p.tpa)[0]
+
+    if arp_p.op == arp.ARP_OP_REQUEST:
+
+        # Make sure they match our mask
+        if (dest_num &amp; imask != mask):
+            continue
+
+        print &quot;Host %s is looking for %s. Responding with: %s &quot; % (orig, dest, my_mac)
+        packet = buildARP(my_mac, dest, to_mac, orig)
+        s.send(str(packet))
+
+
+</pre>
+<p>The first thing the application does when it enters the receive loop is grab 1500 bytes of data off the network. Since we're dealing with datagrams we'll need to specify a big enough buffer for the entire packet to fit in or else it will be discarded. Obviously, ARP packets are not 1500 bytes big, but I just wanted to be on the safe side. Next, the data buffer is passed to the dpkt algorithm for deserialization into an ARP object. Once complete, several key pieces of information are pulled from the packet: origin IP address, destination MAC address, and destination IP address. From here, the ARP packet's operation is checked to make sure it is an ARP request. If so, we'll check the destination's IP address against mask. If this packet is within our network mask, we'll create a new ARP response and fill it with the host's MAC address as the destination MAC. This way, the IP packet will be routed to us.</p>
+<h3></h3>

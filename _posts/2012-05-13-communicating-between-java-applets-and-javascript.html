@@ -1,0 +1,67 @@
+---
+layout: post
+title: Communicating Between Java Applets and Javascript
+categories:
+- Programming
+tags:
+- Applet
+- Java
+- Javascript
+status: publish
+type: post
+published: true
+meta:
+  _edit_last: '1'
+  _et_leanbiz_settings: a:8:{s:14:"et_is_featured";s:1:"1";s:15:"et_fs_variation";s:1:"4";s:11:"et_fs_video";s:0:"";s:17:"et_fs_video_embed";s:0:"";s:11:"et_fs_title";s:49:"Communicating
+    Between Java Applets and Javascript";s:17:"et_fs_description";s:61:"Interacting
+    with Java Applets from Javascript and vise versa!";s:10:"et_fs_link";s:0:"";s:22:"et_fs_link_custom_text";s:0:"";}
+  _thumbnail_id: '90'
+author:
+  login: dillonb
+  email: thedillonb@gmail.com
+  display_name: Dillon
+  first_name: Dillon
+  last_name: Buchanan
+---
+<p>Javascript and Java have a close relationship, especially in the world of web browsers. What many may not realize is that the two can actually inter-operate with each other quite easily. Javascript can be written to directly call into a Java Applet's methods (<a href="http://docs.oracle.com/javase/tutorial/deployment/applet/invokingAppletMethodsFromJavaScript.html">example here</a>) and, with a little love, a Java Applet can execute Javascript code in the context of the browser (<a href="http://docs.oracle.com/javase/6/docs/technotes/guides/plugin/developer_guide/java_js.html">example here</a>). Unfortunately, the tutorials are a little more complex than I think they need to be. Hence, here is a tl;dr (too long; didn't read) version.</p>
+
+<h2>Javascript to Java</h2>
+<p>Calling into a Java Applet from Javascript is incredibly easy. First, we need an Applet HTML tag:</p>
+<pre class="brush: html; gutter: true">&lt;applet archive=&quot;CrossDomain.jar&quot; code=&quot;Main.class&quot; name=&quot;myApplet&quot; width=&quot;1&quot; height=&quot;1&quot;&gt;&lt;/applet&gt;</pre>
+<p>If you're not familiar with the applet tag check out the <a href="http://www.w3schools.com/tags/tag_applet.asp">documentation</a>. In the example above, we've got a jar called "CrossDomain" and a class within the jar called "Main" that we'll be referencing directly. All of this can be found in the documentation, however, the most important part to our example is the "name" attribute. This "name" attribute is how we'll refer to the Java Applet in the Javascript code. Now it's time to make a call into our Applet! Somewhere in our Javascript we'll stick the following:</p>
+<pre class="brush: javascript; gutter: true">document.myApplet.thisIsAMethodCall(argument);</pre>
+<p>The "document" variable references the DOM object and the "myApplet" field specifies the Applet name we just coded above! Finally, the "thisIsAMethodCall" is a public method in our Java class that will return some value.</p>
+<pre class="brush: java; gutter: true">import java.applet.Applet;
+
+public class Main extends Applet {
+
+    public String thisIsAMethodCall(String argument) {
+        return &quot;Hello: &quot; + argument;
+    }
+
+}</pre>
+<p>That's it. What's even more interesting is that I don't have to return just primitives from Java. Instead, I can return some complex class I've created. The Javascript object will reference the Java object and any subsequent calls into the object will result in a call into the Java context.</p>
+
+<h2>Java to Javascript</h2>
+<p>Now it's time to code  up some logic to call into Javascript from the Java context. There's a few ways to do this as stated by the tutorial <a href="http://docs.oracle.com/javase/6/docs/technotes/guides/plugin/developer_guide/java_js.html">here</a>. My personal preference is to use the JSObject method. It's extremely straightforward and simple. First let's code some Javascript</p>
+<pre class="brush: javascript; gutter: true">document.myApplet.callbackMethod(&quot;hey everyone!&quot;, &quot;callback&quot;);
+
+function callback(argument) {
+    alert(argument);
+}</pre>
+<p class="brush: javascript; gutter: true">The first line calls into the Java Applet with 2 parameters: something to say, and the name of the function we want to call back into. Why do we need the latter argument? Well, much of my experience with Java Applets requires the Javascript engine to pass off some work to the Applet, and let it process it and return it at it's leisure. We obviously don't want to block the Javascript execution since we only get one thread to do Javascript work. In our Applet world, we can do things with multiple threads. So, we'll pass off work and let the Java Applet return to our code when it's ready. Also, because Java has no notion of how to directly reference a Javascript function, we'll use the name of the function to reference it.</p>
+<p class="brush: javascript; gutter: true">Now let's write our Java Applet:</p>
+<pre class="brush: java; gutter: true">import java.applet.Applet;
+import netscape.javascript.JSObject;
+
+public class Main extends Applet {
+
+    public void callbackMethod(String argument, String functionName) {
+        JSObject win = JSObject.getWindow(this);
+        win.call(functionName, new Object[] { argument });
+    }
+
+}</pre>
+<p class="brush: java; gutter: true">The first thing our function does is grab a reference to the Javascript context via the window this Applet belongs to. Once we've acquired that, we're free to "call" (execute) a Javascript function. In this case, we're executing the function we passed in as our second argument. The second argument of the "call" method is an array of Objects to return as arguments into the callback function. That is! Wait! One last thing:</p>
+<h3>The Mysterious plugin.jar</h3>
+<p>When I first discovered the JSObject I could not find where it lived! Buried in the <a href="http://docs.oracle.com/javase/6/docs/technotes/guides/plugin/developer_guide/java_js.html">example</a> document is the hint that it belongs to a JAR called "plugin." Now, where does this bad boy live? It can be found within the "lib" folder of your JRE installation. For me it was: C:\Program Files\Java\jdk1.6.0_32\jre\lib. If you're using Eclipse, like me, it does not add it automatically to your Applet project. Make sure you add the external reference to the JAR in your build path. You should be all set afterwards.</p>

@@ -1,0 +1,52 @@
+---
+layout: post
+title: MonoTouch Slide-out Navigation
+categories:
+- Programming
+tags:
+- bitbucket
+- ios
+- iphone
+- monotouch
+status: publish
+type: post
+published: true
+meta:
+  _edit_last: '1'
+  _et_leanbiz_settings: a:1:{s:14:"et_is_featured";s:1:"0";}
+  _thumbnail_id: '127'
+  _oembed_dddd1d7ee64ce9ec909219df0dc18ce5: <iframe width="500" height="375" src="http://www.youtube.com/embed/YnDURn_Y60E?fs=1&feature=oembed"
+    frameborder="0" allowfullscreen></iframe>
+  _oembed_9dd7d03509186edf9f72fa033029ae0f: <iframe width="590" height="443" src="http://www.youtube.com/embed/YnDURn_Y60E?fs=1&feature=oembed"
+    frameborder="0" allowfullscreen></iframe>
+  _oembed_f38ba2c59cee54cbe906756829f224ef: <iframe width="500" height="375" src="http://www.youtube.com/embed/YnDURn_Y60E?feature=oembed"
+    frameborder="0" allowfullscreen></iframe>
+  _oembed_5f37992b246461b2b360c7f8be97259a: <iframe width="630" height="473" src="http://www.youtube.com/embed/YnDURn_Y60E?feature=oembed"
+    frameborder="0" allowfullscreen></iframe>
+  _oembed_8d3401a2185140b2ee302947cf4505bd: <iframe width="640" height="480" src="http://www.youtube.com/embed/YnDURn_Y60E?feature=oembed"
+    frameborder="0" allowfullscreen></iframe>
+author:
+  login: dillonb
+  email: thedillonb@gmail.com
+  display_name: Dillon
+  first_name: Dillon
+  last_name: Buchanan
+---
+<p>I don't much care for Facebook, however, I believe they did a great job on their mobile application. One of the features I find particularly well crafted is the slide-out navigation. If you're not sure what I'm talking about I am referring to the ability to reach the navigation menu just by swiping your finger to the right on the application title bar. You're also capable of reaching the same menu if you click on the three bar button in the upper left corner. If you're still confused check out <a href="http://kenyarmosh.com/blog/ios-pattern-slide-out-navigation/">this link</a> for a detailed description. Regardless, it's a great feature and unfortunately I was not able to find any MonoTouch ports! Enter, MonoTouch.SlideoutNavigation.</p>
+<h2></h2>
+<h2>Inspiration</h2>
+<p>When I first started my search I stumbled upon <a href="http://nickharris.wordpress.com/2012/02/05/ios-slide-out-navigation-code/">Nick Harris' implementation</a> of a slide-out navigation controller developed in Objective-C. It was an excellent start, however, it lacked a few features I wanted. First, I wanted it in C#. Secondly, I when the slide-out action occurred I didn't want it to slide-out the photo representation of the previous view, I wanted it to slide-out the actual UI layer.</p>
+<p>In addition to Nick's implementation, I found a few useful concepts from <a href="http://stackoverflow.com/questions/7775195/splitview-but-on-iphone">this StackOverflow article</a>. While these implemented a real layer slide-out - as opposed to the view screenshot layout - it was still missing that important feature: C#!</p>
+
+<h2>Implementation</h2>
+<p>I'm not going to bother posting code here since you can find it <a href="https://bitbucket.org/thedillonb/monotouch.slideoutnavigation/">here</a> and attempting to walk through it piece by piece would take a while and I'm not sure I'd be able to explain it better than just viewing the code would.</p>
+
+<h2>In Action</h2>
+<p>Checkout the video of the MonoTouch.SlideoutNavigation project in it's prime below:</p>
+<p>http://www.youtube.com/watch?v=YnDURn_Y60E</p>
+
+<p>Here's a few screenshots for your viewing pleasure:</p>
+<p><a href="http://www.dillonbuchanan.com/wp-content/uploads/2012/06/img1.png"><img class="alignnone  wp-image-126" title="MonoTouchSlideOutNavigation1" src="http://www.dillonbuchanan.com/wp-content/uploads/2012/06/img1.png" alt="" width="277" height="521" /></a><a href="http://www.dillonbuchanan.com/wp-content/uploads/2012/06/img2.png"><img class="alignnone  wp-image-127" title="MonoTouchSlideoutNavigation2" src="http://www.dillonbuchanan.com/wp-content/uploads/2012/06/img2.png" alt="" width="277" height="521" /></a></p>
+<h2></h2>
+<h2>Source Code</h2>
+<p>Check out the source for the MonoTouch.SlideoutNavigation library and a sample application here: <a href="https://bitbucket.org/thedillonb/monotouch.slideoutnavigation/">https://bitbucket.org/thedillonb/monotouch.slideoutnavigation/</a></p>

@@ -1,0 +1,417 @@
+---
+layout: post
+title: Box.com + jQuery Mobile = Mobile Music from the Cloud
+categories:
+- Projects
+tags:
+- Box.com
+- Javascript
+- jQuery Mobile
+- Music
+- PHP
+- SoundManager
+status: publish
+type: post
+published: true
+meta:
+  _et_leanbiz_settings: a:8:{s:14:"et_is_featured";i:1;s:15:"et_fs_variation";i:1;s:11:"et_fs_video";s:0:"";s:17:"et_fs_video_embed";s:0:"";s:11:"et_fs_title";s:27:"Mobile
+    Music from the Cloud";s:17:"et_fs_description";s:71:"Using jQuery Mobile to connect
+    your mobile device to music on the cloud";s:10:"et_fs_link";s:0:"";s:22:"et_fs_link_custom_text";s:0:"";}
+  _edit_last: '1'
+  _thumbnail_id: '61'
+  _wp_old_slug: box-com-jquery-mobile-mobile-music-from-the-cloud
+author:
+  login: dillonb
+  email: thedillonb@gmail.com
+  display_name: Dillon
+  first_name: Dillon
+  last_name: Buchanan
+---
+<p>There are a lot of products out now that give people the ability to push their music to the 'cloud': Google Music and Amazon Cloud are just to name a few. Unfortunately, as a IPhone user, the Google music app, as well as the Amazon Cloud app, were not available for download at the time of developing this. To compensate, I've done a little code mashing between jQuery Mobile (as the front end) + <a href="http://www.schillmania.com/projects/soundmanager2/">SoundManager2</a> (Javascript music player) and PHP + Box.com API (as the back-end) to create a pretty interesting web based music app that pulls your music from your Box.com account.</p>
+
+<p style="text-align: center;"><a href="http://dillonbuchanan.com/wp-content/uploads/2012/05/BoxMusicSongList.png"><img title="BoxMusicSongList" alt="" src="http://dillonbuchanan.com/wp-content/uploads/2012/05/BoxMusicSongList-200x300.png" width="200" height="300" /></a><a href="http://dillonbuchanan.com/wp-content/uploads/2012/05/BoxMusicPlayer.png">  <img class="alignnone size-medium wp-image-60" title="BoxMusicPlayer" alt="" src="http://dillonbuchanan.com/wp-content/uploads/2012/05/BoxMusicPlayer-200x300.png" width="200" height="300" /></a></p>
+
+<h3>Demo</h3>
+<p>Check out  <a href="http://fathomless-journey-7039.herokuapp.com">the demo!</a></p>
+
+<h3>Download the Project</h3>
+<p>For those whom are very interested in how the project works, and any of the details I've left out here, click the download link below to download the entire project and it's dependencies.</p>
+<p><a href="https://github.com/thedillonb/BoxMusicPlayer-Web">Download Source</a></p>
+
+<h3>Box.com Accounts</h3>
+<p>If you plan on replicating this project, or even test this with your own music, you will need a Box.com account. For new users, you can <a href="https://www.box.com/signup">create an account</a> for free by following the link. In addition, for those that wish to attempt their own replication of this project, you'll need a developers key from Box.com which you can acquire from <a href="https://www.box.com/developers/services">here</a>. Create a new application and it will generate a "Api Key" which you will need for making requests from your back-end to Box.com. Finally, if you edit the application you just created and scroll down to a section called "Backend parameters" you'll notice there is a "Require url" field which is typically blank when you create a new application. This field is very important because when a user is not logged into Box.com, the "authenticate" call will redirect the user to the Box.com login page. Once the user logs in, the user needs to be redirected back to your website! If you don't set this then they'll just stay at the Box.com "Thanks for logging in" webpage! Make sure you redirect your users somewhere!</p>
+
+<h3>Writing the Backend PHP</h3>
+<p>I've chosen to write the back-end of out application out of PHP. However, Box.com has plenty of API's already coded up <a title="here" href="http://developers.box.net/w/page/12923917/ApiExamples">here</a> for those whom prefer Java, or C#. To start out, I downloaded the Box.com PHP SDK found <a title="here" href="https://github.com/box/box-php-sdk">here</a> and placed  the all important "lib/Box_Rest_Client.php" in my working directory - specifically, my own "lib" directory. This PHP library accesses Box.com via it's REST API through calls into PHP's curl methods. So if you're looking to replicate this project, make sure you have the correct PHP modules.</p>
+<p>To start out, I created the most important PHP file: index.php. Within this file, we'll put ALL our code. There's not too much. A little PHP mixed with some HTML and Javascript. That's all that's required for this project!</p>
+<p>The first thing we'll plop into our index.php is our PHP code to access Box.com and grab all it's MP3 files.</p>
+<pre class="brush: php; gutter: true">&lt;?php
+    // Include the Box_Rest_Client class
+    include(&#039;lib/Box_Rest_Client.php&#039;);
+
+    // Set your API Key. If you have a lot of pages reliant on the
+    // api key, then you should just set it statically in the
+    // Box_Rest_Client class.
+    $api_key = &#039;5jdn6dhdq4jz4mcafvnmjkse9pe0rgu0&#039;;
+    $box_net = new Box_Rest_Client($api_key);
+
+    //If the user is not authenticated, this function call
+    //will redirect the browser to the Box.com login page!
+    $box_net-&gt;auth_token = $box_net-&gt;authenticate();
+    $songs = Array();
+
+    //Since we ask Box.com for it&#039;s entire filesystem structure we&#039;ll
+    //need a recursive function to traverse the folders.
+    function recurseFolder($folder)
+    {
+        //Global variables
+        global $songs;
+        global $box_net;
+
+        //Loop over all files
+        foreach ($folder-&gt;file as $arr)
+        {
+            //Make sure it&#039;s an MP3!
+            if (strpos($arr-&gt;attr(&#039;file_name&#039;), &#039;.mp3&#039;) === false) continue;
+
+            //Add the file to our &#039;songs&#039; array.
+            $name = str_replace(&#039;.mp3&#039;, &#039;&#039;, $arr-&gt;attr(&#039;file_name&#039;));
+            $songs[] = array(&#039;name&#039; =&gt; $name,
+                             &#039;url&#039; =&gt; $arr-&gt;download_url($box_net));
+        }
+
+        //Traverse the child folders of this folder
+        foreach ($folder-&gt;folder as $arr)
+            recurseFolder($arr);
+    }
+
+    //Look for all folders of the root folder, 0.
+    $folder = $box_net-&gt;folder(0, array(&#039;params&#039; =&gt; array(&#039;nozip&#039;, &#039;simple&#039;)));
+    recurseFolder($folder);
+?&gt;</pre>
+<p>The code is commented inline to assist in determining what the hell I did. However, one very important thing to point out is the "api_key". This is obviously my Box.com API key. For those whom want to give this a go on their own, make sure you replace this key with the key generated when you created your application on Box.com!</p>
+<p>If you follow the code, all it is doing is adding every ".mp3" file to an array called "songs". If you wanted, you could throw a "print_r($songs);" at the bottom of the code and run the page. You'll get an entire print out of what you've managed to pull, data wise, from Box.com.</p>
+
+<h3>A little HTML</h3>
+<p>Next comes the GUI. We've got a lot of choices from here on out as far as graphical frameworks go. However, since I'm planning on accessing this service via my phone I prefer<a href="http://jquerymobile.com/"> jQueryMobile</a> since it's pretty quick and efficient. If you're not familiar with what I'm about to lay down, check out jQueryMobile's <a href="http://jquerymobile.com/demos/1.1.0/">document page</a> and get yourself acquainted. The code below is all that is required to set up the GUI interface needed to make this project function.</p>
+<pre class="brush: html; gutter: true">&lt;body&gt;
+    &lt;div data-role=&quot;page&quot; data-url=&quot;home&quot;&gt;
+        &lt;div data-role=&quot;header&quot; data-id=&quot;header1&quot; data-position=&quot;fixed&quot;&gt;
+            &lt;h1 id=&quot;H1&quot;&gt;Box Music&lt;/h1&gt;
+            &lt;a href=&quot;#player&quot; data-icon=&quot;arrow-r&quot; class=&quot;ui-btn-right&quot; id=&quot;nowPlayingButton&quot; data-iconpos=&quot;notext&quot;&gt;Playing&lt;/a&gt;
+        &lt;/div&gt;
+        &lt;div data-role=&quot;content&quot;&gt;
+            &lt;ul data-role=&quot;listview&quot; data-inset=&quot;false&quot; data-filter=&quot;true&quot; id=&quot;songList&quot;&gt;
+            &lt;/ul&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Player --&gt;
+    &lt;div data-role=&quot;page&quot; id=&quot;player&quot;&gt;
+        &lt;div data-role=&quot;header&quot; data-id=&quot;header1&quot; data-position=&quot;fixed&quot;&gt;
+            &lt;a href=&quot;#home&quot; data-icon=&quot;home&quot; data-iconpos=&quot;notext&quot;&gt;Home&lt;/a&gt;
+            &lt;h1 id=&quot;songName&quot;&gt;Nothing Playing...&lt;/h1&gt;
+        &lt;/div&gt;
+        &lt;div data-role=&quot;content&quot; style=&quot;height: 100%;&quot;&gt;
+            &lt;img src=&quot;note.png&quot; style=&quot;position: absolute; left: 50%; margin-left: -128px; top: 50%; margin-top: -171px;&quot; /&gt;
+        &lt;/div&gt;
+        &lt;div data-role=&quot;footer&quot; data-position=&quot;fixed&quot;&gt;
+            &lt;table style=&quot;margin-left: 5px; margin-right: 5px;&quot;&gt;
+                &lt;tr&gt;
+                    &lt;td&gt;&lt;p id=&quot;songCurrentpos&quot;&gt;0:00&lt;/p&gt;&lt;/td&gt;
+                    &lt;td width=&quot;100%&quot; class=&quot;slider-shit&quot;&gt;&lt;input type=&quot;range&quot; name=&quot;slider&quot; id=&quot;posSlider&quot; value=&quot;0&quot; min=&quot;0&quot; max=&quot;100&quot; width=&quot;100%&quot; data-theme=&quot;d&quot; data-highlight=&quot;true&quot;/&gt;&lt;/td&gt;
+                    &lt;td&gt;&lt;p id=&quot;songDuration&quot;&gt;0:00&lt;/p&gt;&lt;/td&gt;
+                &lt;/tr&gt;
+            &lt;/table&gt;
+            &lt;table&gt;
+                &lt;tr&gt;
+                    &lt;td width=&quot;100%&quot;&gt;
+                        &lt;div data-role=&quot;controlgroup&quot; data-type=&quot;horizontal&quot;&gt;
+                            &lt;fieldset class=&quot;ui-grid-b full-width-buttons&quot;&gt;
+                                &lt;div class=&quot;ui-block-a&quot;&gt;
+                                    &lt;a data-role=&quot;button&quot; data-iconpos=&quot;top&quot; data-icon=&quot;back&quot; id=&quot;previousSong&quot;&gt;Previous&lt;/a&gt;
+                                &lt;/div&gt;
+                                &lt;div class=&quot;ui-block-b&quot;&gt;
+                                    &lt;a data-role=&quot;button&quot; data-iconpos=&quot;top&quot; data-icon=&quot;arrow-r&quot; id=&quot;playSong&quot;&gt;Play&lt;/a&gt;
+                                &lt;/div&gt;
+                                &lt;div class=&quot;ui-block-c&quot;&gt;
+                                    &lt;a data-role=&quot;button&quot; data-iconpos=&quot;top&quot; data-icon=&quot;forward&quot; id=&quot;nextSong&quot;&gt;Next&lt;/a&gt;
+                                &lt;/div&gt;
+                            &lt;/fieldset&gt;
+                        &lt;/div&gt;
+                    &lt;/td&gt;
+                    &lt;td&gt;
+                        &lt;div data-role=&quot;controlgroup&quot; data-type=&quot;horizontal&quot;&gt;
+                            &lt;a href=&quot;#songOptionsPage&quot; id=&quot;songOptionsButton&quot; data-role=&quot;button&quot; data-iconpos=&quot;top&quot; data-icon=&quot;gear&quot; data-iconpos=&quot;notext&quot; data-rel=&quot;dialog&quot;&gt;        &lt;/a&gt;
+                        &lt;/div&gt;
+                    &lt;/td&gt;
+                &lt;/tr&gt;
+            &lt;/table&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;!-- Dialog --&gt;
+    &lt;div data-role=&quot;dialog&quot; data-url=&quot;songOptionsPage&quot; id=&quot;songOptionsPage&quot;&gt;
+        &lt;div data-role=&quot;content&quot;&gt;
+            &lt;h3&gt;Music Options&lt;/h3&gt;
+            &lt;div class=&quot;containing-element&quot;&gt;
+                &lt;select name=&quot;slider&quot; id=&quot;shuffleSlider&quot; data-role=&quot;slider&quot; data-track-theme=&quot;a&quot;&gt;
+                    &lt;option value=&quot;off&quot;&gt;Shuffle Off&lt;/option&gt;
+                    &lt;option value=&quot;on&quot;&gt;Shuffle On&lt;/option&gt;
+                &lt;/select&gt;
+            &lt;/div&gt;
+            &lt;div class=&quot;containing-element&quot;&gt;
+                &lt;select name=&quot;slider&quot; id=&quot;repeatSlider&quot; data-role=&quot;slider&quot; data-track-theme=&quot;a&quot;&gt;
+                    &lt;option value=&quot;off&quot;&gt;Repeat Off&lt;/option&gt;
+                    &lt;option value=&quot;on&quot;&gt;Repeat On&lt;/option&gt;
+                &lt;/select&gt;
+            &lt;/div&gt;
+            &lt;a data-role=&quot;button&quot; data-iconpos=&quot;left&quot; data-icon=&quot;back&quot; data-rel=&quot;back&quot;&gt;Back&lt;/a&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/body&gt;</pre>
+<p>I've chosen to go with 3 windows: song selection, song player, and player options. The song selection window, denoted as "data-url=home", contains a simple list view. This list view is where I'll add all the songs I find on Box.com! The song player window, denoted as "data-url=player", will contain controls for moving forward and backward in the playlist, playing/pausing, and anything else related to the playing of music. This window will be displayed when the user chooses a song to play. Finally, the player options window, denoted by "data-url=songOptionsPage", contains simple switches for turning shuffle and repeat on or off.</p>
+<h3></h3>
+<h3>A Dash of Javascript</h3>
+<p>The final part to the application is to program the javascript. Again, being very familiar with jQuery I've done much of the Javascript in it.</p>
+<pre class="brush: javascript; gutter: true">		//A pointer to the currently playing song
+        var playingSong = null;
+
+        //The id into the song array
+        var playingSongId = null;
+
+        //The sound id for soundmanager
+        var mySound = &#039;mySound&#039;;
+
+        //Whether repeat is on
+        var repeat = false;
+
+        //Whether shuffle is on
+        var shuffle = false;
+
+        //Grab the songs
+        var songs = [
+        &lt;?php
+            foreach ($songs as $song)
+                echo &quot;{name: &#039;&quot; . $song[&quot;name&quot;] . &quot;&#039;, url: &#039;&quot; . $song[&quot;url&quot;] . &quot;&#039;},&quot;;
+        ?&gt;
+        ];
+
+        /*
+        * Document ready!
+        */
+        $(function () {
+
+            //Prefetch all pages
+            $.mobile.loadPage(&quot;#home&quot;, { showLoadmsg: false });
+            $.mobile.loadPage(&quot;#player&quot;, { showLoadmsg: false });
+            $.mobile.loadPage(&quot;#songOptionsPage&quot;, { showLoadmsg: false });
+
+            //Apprently I have to initialize it...
+            //$(&#039;#songList&#039;).listview();
+            $(&quot;#posSlider&quot;).slider(&quot;disable&quot;);
+
+            //Set the playing info to nothing
+            setPlayingInfo();
+
+            var songList = $(&quot;#songList&quot;);
+            for (var i = 0; i &lt; songs.length; i++) {
+                var a = $(&quot;&lt;a href=&#039;#player&#039;&gt;&lt;h3 class=&#039;ui-li-heading&#039;&gt;&quot; + songs[i].name + &quot;&lt;/h3&gt;&lt;/a&gt;&quot;);
+                $(a).click({ id: i }, function (event) {
+                    playSong(event.data.id);
+                });
+                songList.append($(&quot;&lt;li&gt;&lt;/li&gt;&quot;).append(a));
+            }
+            $(songList).listview(&quot;refresh&quot;);
+
+            $(&quot;#previousSong&quot;).click(playPreviousSong);
+            $(&quot;#nextSong&quot;).click(playNextSong);
+
+            //Play button was clicked
+            $(&quot;#playSong&quot;).click(function () {
+
+                //Nothing playing? Start from the beginning
+                if (playingSongId == null) {
+                    playSong(0);
+                    return;
+                }
+
+                //Toggle the pause
+                setPauseState(soundManager.togglePause(mySound).paused);
+            });
+
+            //Toggle the shuffle button
+            $(&quot;#shuffleSlider&quot;).change(function () {
+                shuffle = $(this).attr(&#039;value&#039;) == &#039;on&#039; ? true : false;
+            });
+
+            //Toggle the shuffle button
+            $(&quot;#repeatSlider&quot;).change(function () {
+                repeat = $(this).attr(&#039;value&#039;) == &#039;on&#039; ? true : false;
+            });
+
+            $(&#039;#posSlider&#039;).change(function(){
+                var slider_value = $(this).val()
+                //soundManager.setPosition(mySound, slider_value);
+            });
+        });
+
+        /*
+        * Play a song with a specific ID
+        */
+        function playSong(id) {
+            //Stop the sound from playing
+            soundManager.destroySound(mySound);
+
+            //If we&#039;re under, just go to the end!
+            if (id &lt; 0)
+                id = songs.length - 1;
+
+            //If we&#039;re over, choose what to do via the repeat flag
+            if (id &gt;= songs.length)
+                    id = 0;
+
+            //Save some variables
+            playingSongId = id;
+            playingSong = songs[playingSongId];
+
+            //Create the sound and begin playing whenever!
+            soundManager.createSound({
+                id: mySound,
+                url: playingSong.url,
+                autoPlay: true,
+                stream: true,
+                onplay: function () {
+                    setPlayingInfo(playingSong.name);
+                    setPauseState(false);
+                    setPlayTime();
+                },
+                onfinish: function() {
+                    //We&#039;ll only continue if we&#039;re shuffling or repeating if we past the end...
+                    if (shuffle == false &amp;&amp; (playingSongId + 1 &gt;= songs.length) &amp;&amp; repeat == false) {
+                        //No more songs...
+                        setPlayingInfo();
+                        setPauseState(false);
+                        setPlayTime();
+                        playingSong = null;
+                        playingSongId = null;
+                        return;
+                    }
+                    else {
+                        playNextSong();
+                    }
+                },
+                onload: function () {
+                    //We fully loaded this song, let&#039;s update it&#039;s duration incase
+                    //we don&#039;t know...
+                    playingSong.duration = this.duration / 1000;
+                },
+                whileplaying: function () {
+                    setPlayTime(this.position / 1000, playingSong.duration, this.durationEstimate / 1000);
+                }
+            });
+        }
+
+        /*
+        * Play the next song
+        */
+        function playNextSong() {
+            //If shuffle is on, we shall shuffle
+            if (shuffle == true)
+                return shuffleSong();
+            playSong(playingSongId + 1);
+        }
+
+        /*
+        * Play the previous song
+        */
+        function playPreviousSong() {
+            //If shuffle is on, we shall shuffle
+            if (shuffle == true)
+                return shuffleSong();
+            playSong(playingSongId - 1);
+        }
+
+        /*
+        * Shuffle the next song
+        */
+        function shuffleSong() {
+            var i = Math.floor((Math.random() * songs.length));
+
+            //I don&#039;t want to listen to the same song...
+            if (playingSongId == i &amp;&amp; songs.length &gt; 1) {
+                if (--i &gt;= songs.length)
+                    i = 0;
+            }
+
+            //Play the song!
+            playSong(i);
+        }
+
+        /*
+        * Set the playing information elements
+        */
+        function setPlayingInfo(name) {
+            //Passing nothing into this function results in it&#039;s visibility being
+            //changed to hide the title &amp; artist fields
+            if (name == undefined) {
+                $(&quot;#nowPlayingButton&quot;).hide();
+            } else {
+                $(&quot;#nowPlayingButton&quot;).show();
+            }
+
+            //Set the name and artist elements
+            $(&quot;#songName&quot;).text(name == undefined ? &quot;Unknown&quot; : name);
+
+            //We need to refresh the list view because we modified the footer and
+            //it takes up more space now!
+            $(&quot;#songList&quot;).listview(&quot;refresh&quot;);
+        }
+
+        /*
+        * Set the pause state of the play button
+        */
+        function setPauseState(paused) {
+            if (paused) {
+                $(&quot;#playSong .ui-btn-text&quot;).text(&quot;Play&quot;);
+            } else {
+                $(&quot;#playSong .ui-btn-text&quot;).text(&quot;Pause&quot;);
+            }
+        }
+
+        /*
+        * Set the Play clock
+        */
+        function setPlayTime(current, duration, estimateDuration) {
+            function pad(number, length) {
+                var str = &#039;&#039; + number;
+                while (str.length &lt; length)
+                    str = &#039;0&#039; + str;
+                return str;
+            }
+
+            //Make sure there is a current time...
+            if (current &lt; 0 || isNaN(current)) {
+                $(&quot;#songCurrentpos&quot;).html(&quot; &quot;);
+            } else {
+                //Some value will always be visible.
+                $(&quot;#songCurrentpos&quot;).text(pad(Math.floor(current / 60), 2) + &quot;:&quot; + pad(Math.floor(current % 60), 2));
+                $(&quot;#posSlider&quot;).val(Math.floor(current));
+            }
+
+            if (duration &lt; 0 || isNaN(duration)) {
+                $(&quot;#songDuration&quot;).html(&quot; &quot;);
+
+                //We&#039;ll take the estimate...
+                if (estimateDuration !== &#039;undefined&#039;)
+                    $(&quot;#posSlider&quot;).attr(&#039;max&#039;, estimateDuration);
+            } else {
+                $(&quot;#songDuration&quot;).text(pad(Math.floor(duration / 60), 2) + &quot;:&quot; + pad(Math.floor(duration % 60), 2));
+                $(&quot;#posSlider&quot;).attr(&#039;max&#039;, Math.floor(duration));
+            }
+
+            $(&quot;#posSlider&quot;).slider(&quot;refresh&quot;);
+        }</pre>
+<p>There's nothing too complex going on in the code. The most important thing to note is the PHP code intermixed in there at the beginning. The "$songs" variable that I generated earlier is expanded out here into a Javascript variable. When the DOM is ready, we take all the entries in the "songs" variable and add them to the jQuery Mobile list view. Once that's complete, we'll attach a few event handlers to the click of that list view item. The click will cause <a href="http://www.schillmania.com/projects/soundmanager2/">soundmanager</a> (an excellent javascript sound library) to begin playing the URL of that music file. Once complete, or upon click of the "next" or "previous" buttons, the code will automatically progress in the song array, choosing another song for playing.</p>
+
+<h3></h3>
