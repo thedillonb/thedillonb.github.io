@@ -1622,30 +1622,18 @@ input[type="tel"] {
         width: 60px;
         border-width: 2px; }
       .panel-cover.panel-cover--collapsed .panel-cover__description {
-        display: none; }
+        margin: 0 4em;
+      }
       .panel-cover.panel-cover--collapsed .panel-cover__divider {
-        display: none;
         margin: 1em auto; }
 
   .navigation-wrapper {
-    display: none;
-    position: fixed;
-    top: 42px;
-    right: 0;
-    left: 0;
     width: 100%;
-    padding: 20px 0;
-    background: rgba(51, 51, 51, 0.98);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.15); }
+    padding: 20px 0 0 0; }
     .navigation-wrapper.visible {
       display: block; }
 
-  .cover-navigation {
-    display: block;
-    position: relative;
-    float: left;
-    clear: left;
-    width: 100%; }
+
     .cover-navigation .navigation {
       display: block;
       width: 100%; }
@@ -1656,7 +1644,9 @@ input[type="tel"] {
       padding-top: 5px; }
       .cover-navigation.navigation--social .navigation li {
         display: inline-block;
-        width: 25.8%; }
+        width: 38px; 
+        margin: 0 10px 0 0;
+      }
 
   .content-wrapper {
     width: 80%;
