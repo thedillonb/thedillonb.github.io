@@ -1617,19 +1617,19 @@ input[type="tel"] {
       background-position: center center; }
       .panel-cover.panel-cover--collapsed .panel-main__inner {
         display: block;
-        padding: 70px 0 30px 0; }
+        padding: 30px 0 20px 0; }
       .panel-cover.panel-cover--collapsed .panel-cover__logo {
         width: 60px;
         border-width: 2px; }
       .panel-cover.panel-cover--collapsed .panel-cover__description {
-        margin: 0 4em;
-      }
+         }
       .panel-cover.panel-cover--collapsed .panel-cover__divider {
+        
         margin: 1em auto; }
 
   .navigation-wrapper {
     width: 100%;
-    padding: 20px 0 0 0; }
+    padding: 10px 0 0 0; }
     .navigation-wrapper.visible {
       display: block; }
 
