@@ -2,9 +2,14 @@ name: Dillon Buchanan
 markdown: redcarpet
 pygments: true
 paginate: 5
+permalink: /archive/:year/:month/:day/:title/
+paginate_path: "page/:num"
 
 web_url: http://www.dillonbuchanan.com
 
 # Stuff for the website
 description: "Hello! I am Dillon Buchanan. I'am software developer and all-around programming enthusist working in Boston. I create great software!"
 blog_logo: https://avatars2.githubusercontent.com/u/1644068?s=460
+
+gems:
+  - jekyll-sitemap
