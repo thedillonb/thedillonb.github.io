@@ -20,6 +20,7 @@ author:
   last_name: Buchanan
 ---
 <p>I hate writing plain HTML these days. With the advent of templating engines like <a href="http://slim-lang.com/">Slim</a> it's really made it hard to ever go back to writing plain HTML. In many of my projects I commonly use a Javascript framework like AngularJS which heavily depends on view templates. To make things easier I generally put all my views in the asset folder - but uh-oh, out of the box it looks like I can't use Slim to create my templates! Well there's a simple fix to get this to work.</p>
+
 <h2>The Problem</h2>
 <p>If you've ever stuck a Slim file in the assets folder and attempted to access it via it's base extension you'll know it doesn't work quite like you'd probably expect. If I have a file called '/assets/app/templates/test.html.slim' I can only access it if I go to that exact path in the browser and even then it's still in Slim format. The ideal outcome is to be able to access '/assets/app/templates/test.html' and for the engine to respond with HTML. Here's how we fix that.</p>
 <h2>The Fix</h2>

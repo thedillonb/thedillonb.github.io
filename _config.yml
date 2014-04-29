@@ -4,6 +4,7 @@ pygments: true
 paginate: 5
 permalink: /archive/:year/:month/:day/:title/
 paginate_path: "page/:num"
+excerpt_separator: </p>
 
 web_url: http://www.dillonbuchanan.com
 
@@ -13,3 +14,4 @@ blog_logo: https://avatars2.githubusercontent.com/u/1644068?s=460
 
 gems:
   - jekyll-sitemap
+  - jekyll-redirect-from
