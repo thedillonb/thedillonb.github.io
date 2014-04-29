@@ -2,7 +2,7 @@ name: Dillon Buchanan
 markdown: redcarpet
 pygments: true
 paginate: 5
-permalink: /archive/:year/:month/:day/:title/
+permalink: /:categories/:year/:month/:day/:title/
 paginate_path: "page/:num"
 excerpt_separator: </p>
 
