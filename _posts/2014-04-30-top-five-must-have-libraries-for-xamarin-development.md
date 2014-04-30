@@ -1,6 +1,6 @@
 ---
 layout: post
-published: false
+published: true
 title: Top Five Must Have Libraries for Xamarin Development
 categories: Programming
 tags: 
@@ -27,4 +27,3 @@ Like MvvmCross, ReactiveUI is another MVVM design library with one exception: it
 
 ## Bonus: [Parse](https://parse.com/)
 This one is not really a library but then again, this is not in the 1 to 5 list. If you need cloud support, like analytics, push notifications, or data storage, than you should definitely check out Parse. Their __free__ package is crazy generous. They have a wonderfully simple and light weight assembly for Xamarin projects that make communication simple. I am in no way affiliated with them but their offering is too good to not look into.
-
