@@ -1,6 +1,6 @@
 ---
 layout: post
-published: false
+published: true
 title: Create A Great iOS Icon
 categories: Entrepreneurship
 tags: 
