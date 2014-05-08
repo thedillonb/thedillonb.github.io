@@ -31,9 +31,6 @@ Finally, make the right color choices. It's easy to get overwhelmed and want to 
 
 **Do not use more than 4 colors!** If you know what you're doing, ignore this. But for everyone else who doesn't have a strong artistic background, or color theory for that matter, should stick to four or less. Any more and the icon gets noisy with activity. I strive for 3 or less. It helps reinforce the point above, keeping with the flat theme, as well as helps keep the design simple. Check out [Color Matters](http://www.colormatters.com/color-and-design/basic-color-theory) for more ideas of how to combine colors. Take a look at "analogous" and "complementary" colors. The former is awesome for icons that are calming since all the colors are closely related. The latter is excellent for making one portion of your icon pop with color!
 
+Here's quickly thrown together example I created for a new application I am designing having to do with bug tracking. Notice how it is only 3 colors: white, purple, and dark purple. The shadow is not a typical feature in flat design but I enjoy playing around with different techniques and I think it gives it that one "feature" that helps the icon standout from the others.
+
 ![IssueHub.png](/media/IssueHub.png)
-
-
-
-
-
