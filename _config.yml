@@ -1,5 +1,7 @@
 name: Dillon Buchanan
 markdown: redcarpet
+redcarpet:
+  extensions: ["tables"]
 pygments: true
 paginate: 5
 permalink: /:categories/:title/
