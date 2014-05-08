@@ -12,6 +12,7 @@ tags:
 Creating an iOS icon is either one of the most rewarding parts of creating an iOS application or the most daunting, depending on how good you are with graphics. Luckily, there are a lot of tools out there now that make creating a great icon easy.
 
 You're going to need four tools to start:
+
 1. Photoshop
 2. [iOS Icon Template](http://appicontemplate.com/ios7)
 3. Common sense
