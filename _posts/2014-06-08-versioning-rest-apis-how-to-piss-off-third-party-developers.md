@@ -1,6 +1,6 @@
 ---
 layout: post
-published: false
+published: true
 title: "Versioning REST APIs: How to Piss Off Third Party Developers"
 categories: Programming
 tags: 
@@ -24,6 +24,3 @@ All the while you'll wonder to yourself, "I used a stable API version... Why in 
 > Mismanaging your versioned API is a great way to piss off developers, kill your third party ecosystem, and make sure your product receives no developer evangelism.
 
 If you don't care about third party applications then don't even bother with a versioned API system - it might even slow you down. However, if third party applications are a key component to your product's success then a versioned API is the way to go as long as you **don't change anything within a stable API version!**
-
-
-
