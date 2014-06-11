@@ -2,7 +2,11 @@
 layout: post
 published: false
 title: "Apple's Swift: One Step Forward, Two Steps Back"
-categories: Entrepreneurship
+categories: Programming
+tags: 
+  - ios
+  - swift
+  - mobile
 ---
 
 On June Second, Apple announced the very sleek and extremely welcome new development language for constructing iOS and OSX applications: [Swift](https://developer.apple.com/swift/). Swift is the successor to Objective-C which has been the primary language for developing on iOS and OSX platforms. Swift is a completely new language that Apple has designed for the sole purpose of making it easier for developers to rapidly construct their applications. On the surface, this is great news.
