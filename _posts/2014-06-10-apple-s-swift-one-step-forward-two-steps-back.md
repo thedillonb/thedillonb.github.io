@@ -1,6 +1,6 @@
 ---
 layout: post
-published: false
+published: true
 title: "Apple's Swift: One Step Forward, Two Steps Back"
 categories: Programming
 tags: 
@@ -16,5 +16,3 @@ It's about time that Objective-C was dethroned. The language is hard to pick up 
 Apple's decision to create a completely new language is rediculous. The last thing the world needs is another language let alone one that applies just to Apple's products. Apple just replaced Objective-C, a language that only they use, for Swift, another language that only they will use. Why create a new language when you could easily adopt an existing one? A new programming construct means that **everyone** will have to learn a the language. Oh Great! A language that applies only to Apple. 
 
 When Apple says it's making it easier for developers to develop apps it means that exclusively for Apple developers - which makes sense for them but not for developers. As a developer, the last thing I want to do is lock myself into a single platform which is shrinking in market share. Moving Objective-C out of the limelight was the right thing to do. However, the wrong thing to do was develop a completely new language to supercede it.
-
-
