@@ -1,6 +1,6 @@
 ---
 layout: post
-published: false
+published: true
 title: HTML Scraping in NodeJS with Cheerio
 categories: Programming
 tags: 
