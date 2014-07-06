@@ -2,7 +2,9 @@
 layout: post
 published: false
 title: Effective Code Reviews
-categories: Entrepreneurship
+categories: Programming
+tags: 
+  - programming
 ---
 
 Throughout my professional and my personal career I've been participated in, and been on the receiving end, of a lot of code reviews. I've compiled a few tips that have greatly improved my code reviews as well as improved the code reviews I've participated in.  
