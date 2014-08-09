@@ -34,7 +34,7 @@ title: Dillon Buchanan's Blog
 <!-- Pagination links -->
 <div class="pagination">
   {% if paginator.previous_page %}
-    <a class="newer-posts pagination__newer btn btn-small btn-tertiary" href="/page{{ paginator.previous_page }}">&larr; Newer Posts</a>
+    <a class="newer-posts pagination__newer btn btn-small btn-tertiary" href="/page/{{ paginator.previous_page }}">&larr; Newer Posts</a>
   {% endif %}
   <span class="pagination__page-number">Page {{ paginator.page }} of {{ paginator.total_pages }}</span>
   {% if paginator.next_page %}
