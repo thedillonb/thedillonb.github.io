@@ -16,3 +16,4 @@ blog_logo: "https://avatars2.githubusercontent.com/u/1644068?s=460"
 
 gems:
   - jekyll-sitemap
+  - jekyll-mentions
