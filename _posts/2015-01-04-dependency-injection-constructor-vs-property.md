@@ -1,6 +1,6 @@
 ---
 layout: post
-published: false
+published: true
 title: "Dependency Injection: Constructor vs Property"
 categories: Programming
 tags: 
@@ -100,6 +100,3 @@ Uh, yes. But should you? No. You made your bed with choosing inheritance over co
 > I have an object that depends on another which in-turn depends on this object... Property injection?
 
 This is the **only** reason I would potentially even think about property injection. This problem is typically one of bad object design which you should be able to rectify with some clever thinking. However, if you absolutely can't change those objects then you're stuck. This is where constructor injection fails since neither would be able to instantiate themselves. In this rare case, property injection would be you're only solution :(
-
-
-
