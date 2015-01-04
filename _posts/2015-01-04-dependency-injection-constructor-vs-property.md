@@ -12,7 +12,7 @@ Dependency injection is one of my favourite programming patterns for large proje
 ## Constructor Injection
 The following is an example of constructor injection. As the name suggests, dependencies are injected via the objects constructor and typically saved away for use in any method.
 
-```
+```c#
 class Stuff
 {
     private readonly IDataRepository _dataRepository;
@@ -37,7 +37,7 @@ class Stuff
 ### Property Injection
 The following is an example in property injection. Note how this differs from the constructor injection above. A property (or method) is called by the dependency injector after the object is instantiated, passing the dependency into the object to be saved and utilized later.
 
-```
+```c#
 class Stuff
 {
     private IDataRepository _dataRepository;
@@ -69,7 +69,7 @@ Ok, so which one should you prefer? Always **constructor** over **property**. Co
 
 For example, during construction the object can check every dependency to make sure it exists and not null. If something is wrong, the object will fail to instantiate immediately at the time of creation. Otherwise, the object knows that all dependecies are met and that it is ready to rock. It also means that no-one can accidently swap out the dependency or make a reference change to it. In property injection, there's no way to tell when the injector is done wiring up dependencies. That may mean that one of your dependencies does not resolve to a value and stays null. Do you then wrap every dependency call in a `If` statement to check if there's a valid reference? What happens when there's not? 
 
-```
+```c#
 class Stuff
 {
     // Truncated from Property injection example above.
