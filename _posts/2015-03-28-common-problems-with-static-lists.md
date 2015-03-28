@@ -25,7 +25,7 @@ I've seen this kind of code a million times. The coder's intent here is simple: 
 
 To someone who is not familiar with the true power of the `readonly` keyword you might assume that this data structure and the data inside is completely immune against being changed after creation. Unfortunately, this far from the truth. While the `readonly` keyword prevents the `Countries` variable from being reassigned after instantiation, it doesn't prevent modification to the `List` data structure. Which means the following is completely valid:
 
-```
+```c#
 class Test
 {
 	private static readonly IList<string> Countries = new List<string>() {
@@ -152,7 +152,7 @@ class Test
 
 Always start off by creating read-only static collections via the `ReadOnlyCollection<T>` implementation and exposing the `IReadOnly*` interface. If you find you need to modify the collection then you can revert back to using `IList` and a non-read-only implementation. **You should train yourself to always create immutable collections first!**
 
-As a final note on immutability and what was discussed above I should mention that proper immutability of a list should also extend to its item class. For example, I used `ReadOnlyCollection<string>` in all my examples above. `string` is also an immutable structure which means that it can also not be modified after creation. Thus, my whole structure, is immutable. I cannot change any part of it after creation. This is what's referred to as *deep-immutable*. However, if the item class I used was not immutable then it opens another can of worms:
+As a final note on immutability and what was discussed above I should mention that proper immutability of a list should also extend to its item class. For example, I used `ReadOnlyCollection<string>` in all my examples above. The `string` object is also an immutable structure which means that it can also not be modified after creation. Thus, my whole structure, is immutable - I cannot change any part of it after creation. This is what's referred to as *deep-immutable*. However, if the item class I used was not immutable then it opens another can of worms:
 
 ```c#
 public class Item {
@@ -172,4 +172,4 @@ class Test {
 }
 ```
 
-In this case, because my object itself is not immutable I am able to change it's contents. I am not replacing it in the collection but rather changing it internally. To prevent this, the object `Item` should also be immutable, thus creating *deep-immutability*. While this is sometimes tough to do it should never be overlooked.
+In this case, because my object itself is not immutable I am able to change it's contents. I am not replacing it in the collection but rather changing it internally. This  leads to some of the same problems as before. To prevent this, the object `Item` should also be immutable, thus creating *deep-immutability*. While this is sometimes tough to do it should never be overlooked.
