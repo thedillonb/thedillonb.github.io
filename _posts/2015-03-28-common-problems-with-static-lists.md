@@ -8,10 +8,10 @@ tags:
 ---
 
 
-Immutability is often a subject that is not commonly understood in newer developers (or even older ones for that matter). The pros and cons of creating immutable objects are often not considered when coding which, for the most part, doesn't cause any initial concern. However, when a program reaches a certain complexity developers inevitably make mistakes. This is compounded when there is more than one member working on a programming project. Creating immutable objects should be your first line of defense in defensive programming.
+Immutability is often a subject that is not commonly understood in newer developers (or even older ones for that matter). The pros and cons of creating immutable objects are often not considered when coding which, for the most part, doesn't cause any initial concern. However, when a program reaches a certain complexity developers inevitably make mistakes. This is compounded when there is more than one member working on a programming project. Creating immutable structures is a powerful paradigm in defensive programming, especially when it comes to the common practice of  using static lists!
 
 
-## Common Use Case of Static Lists
+## A Common Use Case of Static Lists
 
 ```c#
 class Test
