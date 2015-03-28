@@ -3,6 +3,8 @@ layout: post
 published: true
 title: Common Problems With Static Lists
 categories: Programming
+tags: 
+  - programming
 ---
 
 
