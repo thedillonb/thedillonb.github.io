@@ -9,7 +9,7 @@ tags:
   - authentication
 ---
 
-Basic authentication is an extremely popular means of authentication due to it's simplicity and ease at which it can be implemented. Unfortunately, over HTTP, it's also the **absolute worst way you could have your clients authenticate**!  Basic authentication utilizes the `Authentication` HTTP header to transmit the clients username and password credentials. The client simply takes the given username and password, base64 encodes them both, and inserts them into the HTTP header when making a request to a server.
+Basic authentication is an extremely popular means of authentication due to it's simplicity and ease at which it can be implemented. Unfortunately, over HTTP, it's also the **absolute worst way you could have your clients authenticate**!  Basic authentication utilizes the Authentication HTTP header to transmit the clients username and password credentials. The client simply takes the given username and password, base64 encodes them both, and inserts them into the HTTP header when making a request to a server.
 
 ```http
 GET /my-cats HTTP/1.1
