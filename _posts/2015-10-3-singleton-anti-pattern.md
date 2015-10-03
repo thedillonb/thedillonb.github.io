@@ -1,4 +1,11 @@
-# The Singleton Anti-Pattern
+---
+layout: post
+categories: Programming
+tags: 
+  - programming
+published: true
+title: The Singleton Anti-Pattern
+---
 
 The singleton is an anti-pattern. Out of all of the object-oriented patterns, the singleton pattern is one of the most widely bastardized and misused. It secretly undermines good choices in application design and introduces global state into an application which tends to bring about unnecessary restrictions. Nine out of ten times the singleton pattern is either implemented wrong, used incorrectly, or just completely unnecessary. The remaining one out of ten it *might* be appropriate - but I doubt it, and you should to.
 
