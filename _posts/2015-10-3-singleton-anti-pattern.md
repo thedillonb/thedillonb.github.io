@@ -1,7 +1,7 @@
 ---
 layout: post
 categories: Programming
-tags: 
+tags:
   - programming
 published: true
 title: The Singleton Anti-Pattern
@@ -11,16 +11,16 @@ The singleton is an anti-pattern. Out of all of the object-oriented patterns, th
 
 The use of the singleton pattern brings along the inevitable violation of [dependency injection][1]. Meaning, instead of writing
 
-```
+```csharp
 class SomeObject
 {
 	IThing thing;
-	
+
 	public SomeObject(IThing thing)
 	{
 		this.thing = thing;
 	}
-	
+
 	public void Start()
 	{
 		this.thing.Execute();
@@ -30,7 +30,7 @@ class SomeObject
 
 You end up writing
 
-```
+```csharp
 class SomeObject
 {
 	public void Start()
@@ -47,17 +47,17 @@ The latter design makes it a nightmare to test efficiently. Imagine the `Thing.E
 
 The former design, however, makes testing trivial. Because of it's injection design - as well as it's use of an interface, which we'll get to in the next section - I can easily create my own implementation of the `IThing` interface and create a `Execute` method that simply returns test data immediately. Because of the loosely coupled design the dependency injection affords it has allowed me to use such techniques as [mock objects][4] to inject my own functionality.
 
-The idea of [Design by contract][5] is an incredibly powerful, and flexible, concept that, when coupled with dependency injection, forms the basis for extremely well written object-oriented applications. As seen in the above section, the use of a `IThing` in the constructor allows me to pass in any implementation of the interface for the `SomeObject` class to operate on. This relies on the fact that we're referring to an objects contract rather than it's concrete implementation. 
+The idea of [Design by contract][5] is an incredibly powerful, and flexible, concept that, when coupled with dependency injection, forms the basis for extremely well written object-oriented applications. As seen in the above section, the use of a `IThing` in the constructor allows me to pass in any implementation of the interface for the `SomeObject` class to operate on. This relies on the fact that we're referring to an objects contract rather than it's concrete implementation.
 
 Let's take a simple singleton method
 
-```
+```csharp
 public Thing GetInstance() { .. }
 ```
 
 Great. It returns a `Thing` object. But, does that `Thing` object implement an interface describing it's functionality? From my experience, probably not. More often, I'll find a singleton class with no interfaces. This is most likely due to the fact that the singleton class is directly instanced rather than passed via a constructor, or method:
 
-```
+```csharp
 public void MyMethod()
 {
 	// No need for interfaces if I plan to use the singleton
@@ -67,13 +67,13 @@ public void MyMethod()
 }
 ```
 
-This lack of an interface means that referring to the singleton is always done via a concrete implementation - like seen above. Even if you follow the dependency injection described in the section above it means you must pass a concrete implementation into the constructor. There's only one place you're going to get a concrete implementation of the class: `Thing.GetInstance()`. 
+This lack of an interface means that referring to the singleton is always done via a concrete implementation - like seen above. Even if you follow the dependency injection described in the section above it means you must pass a concrete implementation into the constructor. There's only one place you're going to get a concrete implementation of the class: `Thing.GetInstance()`.
 
 > A well written singleton implementation returns a concrete implementation which implements a series of interface contracts describing it's functionality.
- 
+
  Application code should never refer to the concrete implementation type of the singleton; only it's interfaces. It's an easy fix: just extract out an interface from your singleton class and use that in your application code.
 
-```
+```csharp
 // Define the interface my singleton will implement
 interface IThing
 {
@@ -96,10 +96,10 @@ class MainApplication
 	public void Main()
 	{
 		IThing t = Thing.GetInstance();
-		
-		// Pass the 'singleton' object into our other classes via 
-		// dependency injection. They don't need to know it's a 
-		// singleton and they only refer to the object 
+
+		// Pass the 'singleton' object into our other classes via
+		// dependency injection. They don't need to know it's a
+		// singleton and they only refer to the object
 		// by it's interface. Everybody wins!
 		new SomeObject(t).Execute();
 	}
@@ -108,7 +108,7 @@ class MainApplication
 
 Check out the `Main` method in the example above: the application *just* began and we're already asking for a singleton instance which we'll use to pass to dependent classes. If there were other classes that depended on `IThing` we could easily pass them an instance from this point which begs the question: what's the point of the singleton? Can we simply rewrite this and avoid the singleton pattern all together?
 
-```
+```csharp
 class MainApplication
 {
 	public void Main()
@@ -125,7 +125,7 @@ class MainApplication
 }
 ```
 
-I've easily rewritten this to not use the singleton pattern, instead, relying on dependency injection to maintain operational consistency. The single instantiation of `Thing` simulates the singleton we had before and every dependent object still gets the same instance by injecting it into their construction. 
+I've easily rewritten this to not use the singleton pattern, instead, relying on dependency injection to maintain operational consistency. The single instantiation of `Thing` simulates the singleton we had before and every dependent object still gets the same instance by injecting it into their construction.
 
 
 [1]: https://en.wikipedia.org/wiki/Dependency_injection
@@ -133,5 +133,3 @@ I've easily rewritten this to not use the singleton pattern, instead, relying on
 [3]: https://en.wikipedia.org/wiki/Single_responsibility_principle
 [4]: https://en.wikipedia.org/wiki/Mock_object
 [5]: https://en.wikipedia.org/wiki/Design_by_contract
-
-
