@@ -9,6 +9,8 @@ title: The Singleton Anti-Pattern
 
 The singleton is an anti-pattern. Out of all of the object-oriented patterns, the singleton pattern is one of the most widely bastardized and misused. It secretly undermines good choices in application design and introduces global state into an application which tends to bring about unnecessary restrictions. Nine out of ten times the singleton pattern is either implemented wrong, used incorrectly, or just completely unnecessary. The remaining one out of ten it *might* be appropriate - but I doubt it, and you should to.
 
+### The Importance of Dependency Injection
+
 The use of the singleton pattern brings along the inevitable violation of [dependency injection][1]. Meaning, instead of writing
 
 ```csharp
@@ -46,6 +48,8 @@ The latter works but completely ignores dependency injection. One of the strengt
 The latter design makes it a nightmare to test efficiently. Imagine the `Thing.Execute()` method does some number crunching and takes upwards of an hour. When I go to create tests for my `SomeObject` class how am I going to test the `Start` method without actually running that computation? There's no way you, or any member of your team, should be waiting an hour for testing feedback. The latter design will obviously not work.
 
 The former design, however, makes testing trivial. Because of it's injection design - as well as it's use of an interface, which we'll get to in the next section - I can easily create my own implementation of the `IThing` interface and create a `Execute` method that simply returns test data immediately. Because of the loosely coupled design the dependency injection affords it has allowed me to use such techniques as [mock objects][4] to inject my own functionality.
+
+### Designing by Contracts
 
 The idea of [Design by contract][5] is an incredibly powerful, and flexible, concept that, when coupled with dependency injection, forms the basis for extremely well written object-oriented applications. As seen in the above section, the use of a `IThing` in the constructor allows me to pass in any implementation of the interface for the `SomeObject` class to operate on. This relies on the fact that we're referring to an objects contract rather than it's concrete implementation.
 
@@ -105,6 +109,8 @@ class MainApplication
 	}
 }
 ```
+
+### Making it Look Easy
 
 Check out the `Main` method in the example above: the application *just* began and we're already asking for a singleton instance which we'll use to pass to dependent classes. If there were other classes that depended on `IThing` we could easily pass them an instance from this point which begs the question: what's the point of the singleton? Can we simply rewrite this and avoid the singleton pattern all together?
 
