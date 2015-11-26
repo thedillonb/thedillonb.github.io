@@ -10,7 +10,17 @@ title: Gracefully shutting down a Nodejs HTTP server
 
 Looking to gracefully shutdown your Nodejs HTTP server? Well, it's actually a little more difficult than you think. Without handling process signals, like "ctrl-c", your application terminates immediately. Which means, there may be requests still processing that you terminated before completion. In a live environment, this is a horrible user experience. Unfortunately, even if you did catch the process' signals, Node doesn't actually have a built in mechanism for gracefully shutting down a running HTTP server.
 
-## Taking a look at the problem
+## Defining the problem
+
+Graceful shutdown is the process by which a running HTTP server:
+
+1. Stops accepting new connections
+2. Stops fulfilling new requests
+3. Waits for in-flight requests to complete
+
+Once these three prerequisites are fufilled the HTTP server is "shutdown". All the while, it has not interrupted any concurrent request while transitioning to this state.
+
+## Node's naive solution
 
 Let's take the classic HTTP server written with Node's native HTTP library:
 
@@ -37,11 +47,11 @@ Unfortunately, not really, there's a problem with this. Reading the documentatio
 
 > Stops the server from accepting new connections and keeps existing connections. This function is asynchronous, the server is finally closed when all connections are ended and the server emits a 'close' event. - From [Nodejs Docs](https://nodejs.org/api/net.html#net_server_close_callback)
 
-The important part of the description to remember is "keeps existing connections". While `close` does stop the listening socket from accepting new ones, sockets that are already connected may continue to operate - which is fine if they're mid-request - but this also includes sockets that are connected with a 'keep-alive' connection type.
+The important part of the description to remember is "keeps existing connections". While `close` does stop the listening socket from accepting new ones, sockets that are already connected may continue to operate - which is fine if they're mid-request - but this also includes sockets that are connected with a 'keep-alive' connection type. 
 
->  HTTP persistent connection, also called HTTP keep-alive, or HTTP connection reuse, is the idea of using a single TCP connection to send and receive multiple HTTP requests/responses, as opposed to opening a new connection for every single request/response pair - from [Wikipedia](https://en.wikipedia.org/wiki/HTTP_persistent_connection)
+>  HTTP persistent connection, also called HTTP keep-alive, or HTTP connection reuse, is the idea of using a single TCP connection to send and receive multiple HTTP requests/responses, as opposed to opening a new connection for every single request/response pair - From [Wikipedia](https://en.wikipedia.org/wiki/HTTP_persistent_connection)
 
-This means that sockets that are kept alive will remain alive and still capable of making additional HTTP requests. This is obviously not what we want. A graceful shutdown should:
+This means that sockets that are kept alive will remain alive and still capable of making additional HTTP requests. This is obviously not what we want. While it fulfils points one and three of our definition of graceful shutdown, it does not fulfill number two and is thus, not a complete solution. A graceful shutdown should programatically:
 
 1. Close the listening socket to prevent new connections
 2. Close all idle keep-alive sockets to prevent new requests during shutdown
