@@ -1,7 +1,9 @@
 ---
 layout: post
-categories: Entrepreneurship
-tags: null
+categories: Programming
+tags: 
+  - nodejs
+  - http
 published: false
 title: Gracefully shutting down a Nodejs HTTP server
 ---
